@@ -14,9 +14,13 @@ Each phase ships as its own pull request into `main`.
 - [x] Run auto-saves after every action and resumes when you reopen the app
 - [x] Version in footer, online/offline indicator, "new version available" prompt
 
-## Phase 2 — Market events
-- [ ] Random events that spike or crash a good's price in a city for several days
-- [ ] News feed / rumours (some rumours are false)
+## Phase 2 — Market events ✅
+- [x] Random events that spike (×2–4) or crash (×0.25–0.5) a good's price in one city for 2–5 days
+- [x] Intel feed of headlines, plus a ticker under the status panel
+- [x] ~25% of headlines are false rumours; the truth is revealed when you visit (Confirmed / Blown over / False)
+- [x] Rumours shown against each city in the travel list, so you can decide if the trip is worth it
+- [x] SPIKE / CRASH badges on affected goods in the market
+- [ ] Ideas for later: paid informants who tell you which rumours are true, events that hit a whole region, "insider tip" events with bigger multipliers
 
 ## Phase 3 — Danger: police & customs
 - [ ] Random encounters while travelling or trading

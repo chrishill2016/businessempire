@@ -6,7 +6,7 @@ namespace BlackMarketEmpire.Services;
 /// All the game rules. Stateless: every method acts on the <see cref="GameState"/> it's given,
 /// which keeps it easy to test and to save/resume.
 /// </summary>
-public sealed class GameEngine(MarketService market, GameRules rules)
+public sealed class GameEngine(MarketService market, EventService events, GameRules rules)
 {
     public const string StartCityId = "london";
 
@@ -21,7 +21,8 @@ public sealed class GameEngine(MarketService market, GameRules rules)
             Debt = rules.StartingDebt,
             Capacity = rules.Capacity,
         };
-        state.Market = market.GenerateMarket(state.CityId, rules);
+        events.SeedNewRun(state, rules);
+        RefreshMarket(state);
         AddLog(state, $"Day 1. You land in {GameCatalog.City(state.CityId).Name} with £{state.Cash:N0} and a £{state.Debt:N0} debt to a loan shark. You have {rules.TotalDays} days.");
         return state;
     }
@@ -99,12 +100,14 @@ public sealed class GameEngine(MarketService market, GameRules rules)
         if (state.Day + days > rules.TotalDays)
             return ActionResult.Fail($"That trip takes {days} days — you only have {DaysLeft(state)} left.");
 
-        AdvanceDays(state, days);
+        AdvanceDays(state, days, inTransit: true);
         state.CityId = cityId;
-        state.Market = market.GenerateMarket(cityId, rules);
+        RefreshMarket(state);
         Touch(state);
         var city = GameCatalog.City(cityId);
-        return Log(state, ActionResult.Ok($"Day {state.Day}. Arrived in {city.Name} after {days} day{(days == 1 ? "" : "s")} on the road."));
+        var message = $"Day {state.Day}. Arrived in {city.Name} after {days} day{(days == 1 ? "" : "s")} on the road.";
+        var intel = events.RevealCity(state, cityId).Select(DescribeReveal).ToList();
+        return Log(state, ActionResult.Ok(intel.Count == 0 ? message : $"{message} {string.Join(" ", intel)}"));
     }
 
     /// <summary>Lie low for a day. On the final day this ends the run.</summary>
@@ -114,7 +117,7 @@ public sealed class GameEngine(MarketService market, GameRules rules)
         if (state.Day >= rules.TotalDays) return EndRun(state);
 
         AdvanceDays(state, 1);
-        state.Market = market.GenerateMarket(state.CityId, rules);
+        RefreshMarket(state);
         Touch(state);
         return Log(state, ActionResult.Ok($"Day {state.Day}. You lie low for a day. New prices in {GameCatalog.City(state.CityId).Name}."));
     }
@@ -148,7 +151,13 @@ public sealed class GameEngine(MarketService market, GameRules rules)
 
     public long Score(GameState state) => state.Cash - state.Debt;
 
-    private void AdvanceDays(GameState state, int days)
+    /// <summary>The active price shock for a good in the current city, if any.</summary>
+    public MarketEvent? EventHere(GameState state, string goodId) => EventService.ActiveEvent(state, state.CityId, goodId);
+
+    private void RefreshMarket(GameState state) =>
+        state.Market = market.GenerateMarket(state.CityId, rules, state.Day, state.Events);
+
+    private void AdvanceDays(GameState state, int days, bool inTransit = false)
     {
         for (var i = 0; i < days; i++)
         {
@@ -157,7 +166,21 @@ public sealed class GameEngine(MarketService market, GameRules rules)
             {
                 state.Debt = (long)Math.Ceiling(state.Debt * (1 + rules.DailyInterest));
             }
+            events.OnNewDay(state, rules, inTransit);
         }
+    }
+
+    private static string DescribeReveal(NewsItem item)
+    {
+        var good = GameCatalog.Good(item.GoodId).Name;
+        var what = item.Kind == MarketEventKind.Spike ? "price spike" : "price crash";
+        return item.Status switch
+        {
+            NewsStatus.Confirmed => $"Intel confirmed: {good} {what}!",
+            NewsStatus.Expired => $"Too late: the {good} {what} has blown over.",
+            NewsStatus.False => $"The {good} {what} was a false rumour.",
+            _ => "",
+        };
     }
 
     private static ActionResult? Guard(GameState state) =>

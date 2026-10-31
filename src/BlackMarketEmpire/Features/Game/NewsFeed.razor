@@ -1,0 +1,38 @@
+<div class="panel pa-4">
+    <div class="d-flex align-center gap-2 mb-2">
+        <NeonIcon Kind="NeonIconKind.Crew" Size="18" />
+        <span class="eyebrow">Intel feed</span>
+    </div>
+    @if (Items.Count == 0)
+    {
+        <div class="muted news-empty">Quiet on the wire. Nothing heard yet.</div>
+    }
+    @foreach (var item in Items.Take(Max))
+    {
+        <div class="news-item status-@item.Status.ToString().ToLowerInvariant()" data-news="@item.Id">
+            <div class="d-flex align-center gap-2 flex-wrap">
+                <span class="news-meta">DAY @item.Day · @GameCatalog.City(item.CityId).Name.ToUpperInvariant()</span>
+                <span class="news-kind @(item.Kind == MarketEventKind.Spike ? "spike" : "crash")">@KindLabel(item.Kind)</span>
+                <span class="news-status">@StatusLabel(item.Status)</span>
+            </div>
+            <div class="news-headline">@item.Headline</div>
+        </div>
+    }
+    <div class="muted mt-2" style="font-size:.8rem">Rumours aren't always true. Go there to find out.</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<NewsItem> Items { get; set; } = [];
+    [Parameter] public int Max { get; set; } = 5;
+
+    public static string KindLabel(MarketEventKind kind) => kind == MarketEventKind.Spike ? "▲ SPIKE" : "▼ CRASH";
+
+    public static string StatusLabel(NewsStatus status) => status switch
+    {
+        NewsStatus.Rumour => "UNVERIFIED",
+        NewsStatus.Confirmed => "CONFIRMED",
+        NewsStatus.Expired => "BLOWN OVER",
+        NewsStatus.False => "FALSE",
+        _ => "",
+    };
+}

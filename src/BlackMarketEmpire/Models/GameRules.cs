@@ -13,5 +13,19 @@ public sealed record GameRules
     public double AvailabilityChance { get; init; } = 0.8;
     public int MaxLogEntries { get; init; } = 30;
 
+    // ----- Market events (Phase 2) -----
+    /// <summary>Chance each new day that a new headline (real event or false rumour) appears.</summary>
+    public double EventChancePerDay { get; init; } = 0.5;
+    /// <summary>Chance a headline is a false rumour rather than a real event.</summary>
+    public double FalseRumourChance { get; init; } = 0.25;
+    public int MaxActiveEvents { get; init; } = 3;
+    public int MinEventDays { get; init; } = 2;
+    public int MaxEventDays { get; init; } = 5;
+    public double SpikeMinMultiplier { get; init; } = 2.0;
+    public double SpikeMaxMultiplier { get; init; } = 4.0;
+    public double CrashMinMultiplier { get; init; } = 0.25;
+    public double CrashMaxMultiplier { get; init; } = 0.5;
+    public int MaxNewsItems { get; init; } = 20;
+
     public static GameRules Default { get; } = new();
 }

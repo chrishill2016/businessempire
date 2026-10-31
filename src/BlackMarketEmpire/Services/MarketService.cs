@@ -5,19 +5,29 @@ namespace BlackMarketEmpire.Services;
 /// <summary>Generates the day's prices for a city.</summary>
 public sealed class MarketService(IRandomSource random)
 {
-    public Dictionary<string, int> GenerateMarket(string cityId, GameRules rules)
+    /// <summary>
+    /// Today's prices in a city. Active <paramref name="events"/> for this city guarantee the good is
+    /// traded and multiply its price.
+    /// </summary>
+    public Dictionary<string, int> GenerateMarket(string cityId, GameRules rules, int day = 0, IEnumerable<MarketEvent>? events = null)
     {
         var city = GameCatalog.City(cityId);
         var market = new Dictionary<string, int>();
+        var shocks = (events ?? [])
+            .Where(e => e.CityId == cityId && e.IsActiveOn(day))
+            .ToDictionary(e => e.GoodId, e => e.Multiplier);
 
         foreach (var good in GameCatalog.Goods)
         {
-            if (random.NextDouble() >= rules.AvailabilityChance)
+            var available = random.NextDouble() < rules.AvailabilityChance;
+            if (shocks.TryGetValue(good.Id, out var multiplier))
             {
-                continue;
+                market[good.Id] = Math.Max(1, (int)Math.Round(PriceFor(good, city) * multiplier));
             }
-
-            market[good.Id] = PriceFor(good, city);
+            else if (available)
+            {
+                market[good.Id] = PriceFor(good, city);
+            }
         }
 
         // Always have at least one thing on sale so a day is never a dead end.

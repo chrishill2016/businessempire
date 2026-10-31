@@ -33,3 +33,7 @@ window.appStatus = {
         }
     }
 };
+
+window.bme = {
+    scrollToId(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+};

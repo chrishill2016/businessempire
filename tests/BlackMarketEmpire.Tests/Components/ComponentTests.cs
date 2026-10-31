@@ -62,6 +62,46 @@ public class ComponentTests : BunitContext
     }
 
     [Fact]
+    public void MarketList_flags_goods_with_an_active_event()
+    {
+        var state = TestGame.StateWithMarket(TestGame.Engine(), new() { ["cigs"] = 20, ["phones"] = 900 });
+        state.Events.Add(new MarketEvent("london", "phones", MarketEventKind.Spike, 3, 1, 5));
+
+        var cut = Render<MarketList>(p => p.Add(c => c.State, state));
+
+        Assert.Contains("SPIKE", cut.Find("[data-good=phones]").TextContent);
+        Assert.DoesNotContain("SPIKE", cut.Find("[data-good=cigs]").TextContent);
+    }
+
+    [Fact]
+    public void NewsFeed_shows_headlines_with_status()
+    {
+        NewsItem[] news =
+        [
+            new() { Day = 3, CityId = "dubai", GoodId = "phones", Kind = MarketEventKind.Spike, Headline = "Phones soaring", Status = NewsStatus.Rumour },
+            new() { Day = 2, CityId = "london", GoodId = "art", Kind = MarketEventKind.Crash, Headline = "Art crashing", Status = NewsStatus.False },
+        ];
+
+        var cut = Render<NewsFeed>(p => p.Add(c => c.Items, news));
+
+        var items = cut.FindAll(".news-item");
+        Assert.Equal(2, items.Count);
+        Assert.Contains("UNVERIFIED", items[0].TextContent);
+        Assert.Contains("DUBAI", items[0].TextContent);
+        Assert.Contains("▲ SPIKE", items[0].TextContent);
+        Assert.Contains("status-false", items[1].ClassName);
+        Assert.Contains("FALSE", items[1].TextContent);
+    }
+
+    [Fact]
+    public void NewsFeed_shows_empty_message()
+    {
+        var cut = Render<NewsFeed>(p => p.Add(c => c.Items, Array.Empty<NewsItem>()));
+
+        Assert.NotNull(cut.Find(".news-empty"));
+    }
+
+    [Fact]
     public void HighScoreTable_shows_empty_message()
     {
         var cut = Render<HighScoreTable>(p => p.Add(c => c.Scores, Array.Empty<HighScore>()));
