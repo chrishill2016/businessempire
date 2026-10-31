@@ -6,7 +6,7 @@ namespace BlackMarketEmpire.Services;
 /// All the game rules. Stateless: every method acts on the <see cref="GameState"/> it's given,
 /// which keeps it easy to test and to save/resume.
 /// </summary>
-public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, ShippingService shipping, GameRules rules)
+public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, ShippingService shipping, FinanceService finance, GameRules rules)
 {
     public const string StartCityId = "london";
 
@@ -124,6 +124,11 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         if (intel.Count > 0) message = $"{message} {string.Join(" ", intel)}";
         var waiting = DeliveriesHere(state).Sum(s => s.Quantity);
         if (waiting > 0) message = $"{message} {waiting} items are waiting for you to collect.";
+        if (Enforcers(state) is { } visit)
+        {
+            message = $"{message} {visit}";
+            if (state.IsOver) return Log(state, ActionResult.Ok($"{message} You didn't survive. Your run is over."));
+        }
         if (encounters.MaybeStopOnArrival(state, rules, option.Method)) message = $"{message} {state.PendingEncounter!.Intro}";
         return Log(state, ActionResult.Ok(message));
     }
@@ -254,7 +259,13 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         AdvanceDays(state, 1);
         RefreshMarket(state);
         Touch(state);
-        return Log(state, ActionResult.Ok($"Day {state.Day}. You lie low for a day. New prices in {GameCatalog.City(state.CityId).Name}."));
+        var message = $"Day {state.Day}. You lie low for a day. New prices in {GameCatalog.City(state.CityId).Name}.";
+        if (Enforcers(state) is { } visit)
+        {
+            message = $"{message} {visit}";
+            if (state.IsOver) message = $"{message} You didn't survive. Your run is over.";
+        }
+        return Log(state, ActionResult.Ok(message));
     }
 
     public ActionResult RepayDebt(GameState state, long amount)
@@ -284,8 +295,58 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         return Log(state, ActionResult.Ok($"Run over. Final net worth: {Money.Format(Score(state))}."));
     }
 
-    /// <summary>Cash minus debt. If you're killed your cash is lost, but the loan shark still counts the debt.</summary>
-    public long Score(GameState state) => state.EndReason == EndReason.Killed ? -state.Debt : state.Cash - state.Debt;
+    /// <summary>
+    /// Cash plus bank savings minus everything you owe. If you're killed the cash on you is lost,
+    /// but the bank balance survives and the lenders still count what you owe.
+    /// </summary>
+    public long Score(GameState state) =>
+        (state.EndReason == EndReason.Killed ? 0 : state.Cash) + state.Bank - state.TotalDebt;
+
+    // ----- Finance -----
+
+    public LoanOffer LoanOffer(GameState state, string lenderId) =>
+        FinanceService.Offer(state, rules, GameCatalog.Lender(lenderId));
+
+    public ActionResult Borrow(GameState state, string lenderId, long amount) =>
+        Apply(state, () => finance.Borrow(state, rules, lenderId, amount));
+
+    public ActionResult RepayLoan(GameState state, Guid loanId, long amount) =>
+        Apply(state, () => finance.Repay(state, loanId, amount));
+
+    public ActionResult Deposit(GameState state, long amount) => Apply(state, () => FinanceService.Deposit(state, amount));
+
+    public ActionResult Withdraw(GameState state, long amount) => Apply(state, () => FinanceService.Withdraw(state, amount));
+
+    public ActionResult RentStash(GameState state, StashTier tier) => Apply(state, () => FinanceService.RentStash(state, rules, tier));
+
+    public ActionResult Store(GameState state, string goodId, int quantity) =>
+        Apply(state, () => FinanceService.Store(state, rules, goodId, quantity));
+
+    public ActionResult TakeFromStash(GameState state, string goodId, int quantity) =>
+        Apply(state, () => FinanceService.Take(state, goodId, quantity));
+
+    /// <summary>Runs a simple action with the usual guard, saving and logging.</summary>
+    private ActionResult Apply(GameState state, Func<ActionResult> action)
+    {
+        if (Guard(state) is { } over) return over;
+        var result = action();
+        if (!result.Success) return result;
+        Touch(state);
+        return Log(state, result);
+    }
+
+    /// <summary>Overdue lenders' enforcers may find you. Returns what happened, if anything.</summary>
+    private string? Enforcers(GameState state)
+    {
+        if (state.IsOver || finance.MaybeEnforcers(state, rules) is not { } visit) return null;
+        if (visit.Damage > 0)
+        {
+            state.Health = Math.Max(0, state.Health - visit.Damage);
+            state.Stats.DamageTaken += visit.Damage;
+            if (state.Health == 0) Finish(state, EndReason.Killed);
+        }
+        return visit.Message;
+    }
 
     /// <summary>Make a choice in the current police encounter.</summary>
     public ActionResult ResolveEncounter(GameState state, EncounterChoice choice)
@@ -363,6 +424,7 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
             }
             events.OnNewDay(state, rules, inTransit);
             foreach (var message in shipping.OnNewDay(state)) AddLog(state, message);
+            foreach (var message in finance.OnNewDay(state, rules)) AddLog(state, message);
         }
     }
 

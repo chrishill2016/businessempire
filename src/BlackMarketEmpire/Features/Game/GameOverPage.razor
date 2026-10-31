@@ -17,10 +17,10 @@
         <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mt-4">
             <div class="display @(_state.EndReason == EndReason.Killed ? "negative" : null) end-reason" style="font-size:1.3rem;text-align:center">@Headline(_state)</div>
             <div class="panel pa-5" style="width:100%;text-align:center">
-                <div class="eyebrow mb-1">@(_state.EndReason == EndReason.Killed ? "Your cash died with you · debt remains" : "Final net worth")</div>
+                <div class="eyebrow mb-1">@(_state.EndReason == EndReason.Killed ? "Your cash died with you · the bank and the debts remain" : "Final net worth")</div>
                 <div class="money @(score < 0 ? "negative" : "positive")" style="font-size:2.4rem;text-shadow:0 0 14px currentColor">@Money.Format(score)</div>
                 <div class="muted mt-2">
-                    Cash @Money.Format(_state.Cash) · Debt @Money.Format(_state.Debt) · Day @_state.Day in @GameCatalog.City(_state.CityId).Name
+                    Cash @Money.Format(_state.Cash) · Bank @Money.Format(_state.Bank) · Owed @Money.Format(_state.TotalDebt) · Day @_state.Day in @GameCatalog.City(_state.CityId).Name
                 </div>
             </div>
             @if (Session.FinalRank is int rank)

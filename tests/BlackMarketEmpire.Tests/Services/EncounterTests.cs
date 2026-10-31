@@ -79,7 +79,7 @@ public class GameEngineEncounterTests
     {
         var random = new SystemRandomSource(new Random(1));
         return new GameEngine(new MarketService(random), new EventService(random),
-            new EncounterService(new ScriptedRandom(encounterRolls)), new ShippingService(random), TestGame.AllAvailable);
+            new EncounterService(new ScriptedRandom(encounterRolls)), new ShippingService(random), new FinanceService(random), TestGame.AllAvailable);
     }
 
     private static GameState Stopped(GameEngine engine, EncounterKind kind = EncounterKind.Police, int units = 20)
@@ -249,7 +249,7 @@ public class GameEngineEncounterTests
     {
         var random = new SystemRandomSource(new Random(1));
         var rules = TestGame.AllAvailable with { MaxStopChance = 1, BaseStopChance = 1 };
-        var engine = new GameEngine(new MarketService(random), new EventService(random), new EncounterService(random), new ShippingService(random), rules);
+        var engine = new GameEngine(new MarketService(random), new EventService(random), new EncounterService(random), new ShippingService(random), new FinanceService(random), rules);
         var state = engine.NewGame();
         state.Inventory["cigs"] = 1;
         state.AverageCost["cigs"] = 10;

@@ -38,6 +38,13 @@ public sealed class GameSession(GameEngine engine, ILocalStore store, HighScoreS
     public Task<ActionResult> ShipAsync(string goodId, int qty, string toCityId, string courierId) =>
         ApplyAsync(s => engine.Ship(s, goodId, qty, toCityId, courierId));
     public Task<ActionResult> CollectAsync() => ApplyAsync(engine.Collect);
+    public Task<ActionResult> BorrowAsync(string lenderId, long amount) => ApplyAsync(s => engine.Borrow(s, lenderId, amount));
+    public Task<ActionResult> RepayLoanAsync(Guid loanId, long amount) => ApplyAsync(s => engine.RepayLoan(s, loanId, amount));
+    public Task<ActionResult> DepositAsync(long amount) => ApplyAsync(s => engine.Deposit(s, amount));
+    public Task<ActionResult> WithdrawAsync(long amount) => ApplyAsync(s => engine.Withdraw(s, amount));
+    public Task<ActionResult> RentStashAsync(StashTier tier) => ApplyAsync(s => engine.RentStash(s, tier));
+    public Task<ActionResult> StoreAsync(string goodId, int qty) => ApplyAsync(s => engine.Store(s, goodId, qty));
+    public Task<ActionResult> TakeFromStashAsync(string goodId, int qty) => ApplyAsync(s => engine.TakeFromStash(s, goodId, qty));
     public Task<ActionResult> WaitAsync() => ApplyAsync(engine.Wait);
     public Task<ActionResult> RepayAsync(long amount) => ApplyAsync(s => engine.RepayDebt(s, amount));
     public Task<ActionResult> EndRunAsync() => ApplyAsync(engine.EndRun);

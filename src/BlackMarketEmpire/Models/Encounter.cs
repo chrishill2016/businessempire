@@ -51,4 +51,7 @@ public sealed class RunStats
     public long FaresPaid { get; set; }
     public long CourierFeesPaid { get; set; }
     public int ShipmentsLost { get; set; }
+    public long Borrowed { get; set; }
+    public int EnforcerVisits { get; set; }
+    public int StashRaids { get; set; }
 }

@@ -6,7 +6,7 @@
                 <NeonIcon Kind="NeonIconKind.Zones" Size="22" />
                 <span class="display status-city" style="font-size:1.25rem">@City.Name.ToUpperInvariant()</span>
             </div>
-            <div class="muted" style="font-size:.9rem">@City.Country</div>
+            <div class="muted" style="font-size:.9rem">@City.Country · <span class="danger-@City.Danger.ToString().ToLowerInvariant()">@City.Danger danger</span></div>
         </div>
         <div style="text-align:right">
             <div class="eyebrow">Day</div>
@@ -23,10 +23,18 @@
         <div class="stat">
             <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Credits" Size="14" /> Cash</div>
             <div class="money status-cash" style="font-size:1.1rem">@Money.Format(State.Cash)</div>
+            @if (State.Bank > 0)
+            {
+                <div class="muted status-bank" style="font-size:.8rem">+ @Money.Format(State.Bank) banked</div>
+            }
         </div>
         <div class="stat">
-            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Debt</div>
-            <div class="money status-debt @(State.Debt > 0 ? "negative" : "positive")" style="font-size:1.1rem">@Money.Format(State.Debt)</div>
+            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Owed</div>
+            <div class="money status-debt @(State.TotalDebt > 0 ? "negative" : "positive")" style="font-size:1.1rem">@Money.Format(State.TotalDebt)</div>
+            @if (State.Loans.Any(l => FinanceService.IsOverdue(l, State.Day)))
+            {
+                <div class="negative status-overdue" style="font-size:.8rem">OVERDUE</div>
+            }
         </div>
         <div class="stat" style="text-align:right">
             <div class="eyebrow d-flex align-center gap-1 justify-end"><NeonIcon Kind="NeonIconKind.Deals" Size="14" /> Case</div>
