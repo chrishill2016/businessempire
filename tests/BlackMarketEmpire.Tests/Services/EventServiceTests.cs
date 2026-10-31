@@ -6,8 +6,8 @@ public class EventServiceTests
 {
     private readonly EventService _events = new(new SystemRandomSource(new Random(11)));
 
-    private static readonly GameRules AlwaysReal = new() { EventChancePerDay = 1, FalseRumourChance = 0 };
-    private static readonly GameRules AlwaysFalse = new() { EventChancePerDay = 1, FalseRumourChance = 1 };
+    private static readonly GameRules AlwaysReal = new() { EventChancePerDay = 1, FalseRumourChance = 0, HiddenEventChancePerDay = 0, CrackdownChancePerDay = 0 };
+    private static readonly GameRules AlwaysFalse = new() { EventChancePerDay = 1, FalseRumourChance = 1, HiddenEventChancePerDay = 0, CrackdownChancePerDay = 0 };
 
     private static GameState State(int day = 5, string city = "london") => new() { Day = day, CityId = city };
 
@@ -47,7 +47,7 @@ public class EventServiceTests
     {
         var state = State();
 
-        _events.OnNewDay(state, new GameRules { EventChancePerDay = 0 });
+        _events.OnNewDay(state, new GameRules { EventChancePerDay = 0, HiddenEventChancePerDay = 0, CrackdownChancePerDay = 0 });
 
         Assert.Empty(state.News);
     }
@@ -59,7 +59,7 @@ public class EventServiceTests
         state.Events.Add(new MarketEvent("dubai", "phones", MarketEventKind.Spike, 3, StartDay: 2, EndDay: 5));
         state.Events.Add(new MarketEvent("dubai", "bags", MarketEventKind.Crash, 0.3, StartDay: 4, EndDay: 8));
 
-        _events.OnNewDay(state, new GameRules { EventChancePerDay = 0 });
+        _events.OnNewDay(state, new GameRules { EventChancePerDay = 0, HiddenEventChancePerDay = 0, CrackdownChancePerDay = 0 });
 
         Assert.Equal("bags", Assert.Single(state.Events).GoodId);
     }

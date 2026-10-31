@@ -59,6 +59,15 @@ public sealed class GameState
 
     public List<Stash> Stashes { get; set; } = [];
 
+    /// <summary>Police crackdowns, current and upcoming (some you don't know about).</summary>
+    public List<Crackdown> Crackdowns { get; set; } = [];
+
+    /// <summary>How much each city's informants trust you, 0–5. Grows each time you pay them.</summary>
+    public Dictionary<string, int> InformantTrust { get; set; } = [];
+
+    /// <summary>Latest market contact report per city.</summary>
+    public Dictionary<string, ContactReport> ContactReports { get; set; } = [];
+
     /// <summary>How you travelled on your most recent trip (affects running away).</summary>
     public TravelMethod? LastTravelMethod { get; set; }
 
@@ -85,6 +94,10 @@ public sealed class GameState
     public int ReputationWith(string lenderId) => Reputation.GetValueOrDefault(lenderId, 5);
 
     public Stash? StashIn(string cityId) => Stashes.FirstOrDefault(s => s.CityId == cityId);
+
+    public Crackdown? CrackdownIn(string cityId) => Crackdowns.FirstOrDefault(c => c.CityId == cityId && c.IsActiveOn(Day));
+
+    public int TrustIn(string cityId) => InformantTrust.GetValueOrDefault(cityId);
 
     public bool Has(string gearId) => Gear.GetValueOrDefault(gearId) > 0;
 

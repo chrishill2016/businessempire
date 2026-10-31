@@ -94,5 +94,25 @@ public sealed record GameRules
     /// <summary>Extra daily raid chance at 100 heat.</summary>
     public double RaidChanceAtMaxHeat { get; init; } = 0.08;
 
+    // ----- Intel (Phase 7) -----
+    /// <summary>Chance each day that a secret event is planned for 1–3 days' time.</summary>
+    public double HiddenEventChancePerDay { get; init; } = 0.45;
+    public int MaxScheduledEvents { get; init; } = 3;
+    public double CrackdownChancePerDay { get; init; } = 0.15;
+    public double CrackdownStopFactor { get; init; } = 1.5;
+    public long StreetCheckPrice { get; init; } = 150;
+    public long ConnectedCheckPrice { get; init; } = 600;
+    public double StreetAccuracy { get; init; } = 0.75;
+    public double ConnectedAccuracy { get; init; } = 0.95;
+    /// <summary>Accuracy gained per point of trust (max 5).</summary>
+    public double AccuracyPerTrust { get; init; } = 0.03;
+    public long TipOffPrice { get; init; } = 1_000;
+    public long ContactPrice { get; init; } = 400;
+    public long FixerBasePrice { get; init; } = 1_500;
+    /// <summary>Fixer fee on top of the base, as a multiple of the good's top price.</summary>
+    public double FixerPriceFactor { get; init; } = 1.5;
+    public double FixerSuccessChance { get; init; } = 0.6;
+    public double FixerSuccessPerTrust { get; init; } = 0.05;
+
     public static GameRules Default { get; } = new();
 }

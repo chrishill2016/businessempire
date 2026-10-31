@@ -16,6 +16,14 @@
                 <span class="news-status">@StatusLabel(item.Status)</span>
             </div>
             <div class="news-headline">@item.Headline</div>
+            @if (item.InformantSaysTrue is { } says && item.Status == NewsStatus.Rumour)
+            {
+                <div class="news-extra @(says ? "positive" : "negative")">@VerdictText(item)</div>
+            }
+            @if (item.KnownMultiplier is { } m && item.Status is NewsStatus.Rumour or NewsStatus.Confirmed)
+            {
+                <div class="news-extra muted">×@m.ToString("0.0") normal price until day @item.KnownEndDay</div>
+            }
         </div>
     }
     <div class="muted mt-2" style="font-size:.8rem">Rumours aren't always true. Go there to find out.</div>
@@ -27,12 +35,16 @@
 
     public static string KindLabel(MarketEventKind kind) => kind == MarketEventKind.Spike ? "▲ SPIKE" : "▼ CRASH";
 
+    public static string VerdictText(NewsItem item) =>
+        $"Informant ({Math.Round(item.InformantAccuracy * 100)}% reliable): {(item.InformantSaysTrue == true ? "it's real" : "it's rubbish")}";
+
     public static string StatusLabel(NewsStatus status) => status switch
     {
         NewsStatus.Rumour => "UNVERIFIED",
         NewsStatus.Confirmed => "CONFIRMED",
         NewsStatus.Expired => "BLOWN OVER",
         NewsStatus.False => "FALSE",
+        NewsStatus.Tip => "INSIDER TIP",
         _ => "",
     };
 }

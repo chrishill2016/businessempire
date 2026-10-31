@@ -11,6 +11,8 @@ public static class TestGame
     {
         AvailabilityChance = 1.0,
         EventChancePerDay = 0,
+        HiddenEventChancePerDay = 0,
+        CrackdownChancePerDay = 0,
         MaxStopChance = 0,
         StingChance = 0,
     };

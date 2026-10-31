@@ -266,3 +266,11 @@ html, body {
 .score-row:last-child { border-bottom: none; }
 .score-rank { font-family: var(--bme-display); font-weight: 800; color: var(--bme-muted); min-width: 2rem; padding-top: 2px; }
 .score-row.score-me { background: rgba(57, 255, 136, 0.08); }
+
+/* Intel */
+.rumour-row { border-bottom: 1px solid var(--bme-line); }
+.rumour-row:last-child { border-bottom: none; }
+.contact-prices { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--bme-display); font-size: .8rem; }
+.news-extra { font-size: .85rem; margin-top: 2px; }
+.status-tip .news-status { color: #FACC15; }
+.crackdown-badge { color: var(--bme-magenta); font-size: .8rem; }

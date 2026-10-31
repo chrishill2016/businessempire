@@ -12,7 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomCenter;
-    config.SnackbarConfiguration.MaxDisplayedSnackbars = 1;
+    config.SnackbarConfiguration.MaxDisplayedSnackbars = 2;
     config.SnackbarConfiguration.VisibleStateDuration = 2500;
     config.SnackbarConfiguration.ShowTransitionDuration = 150;
     config.SnackbarConfiguration.HideTransitionDuration = 150;
@@ -25,6 +25,7 @@ builder.Services.AddSingleton<EventService>();
 builder.Services.AddSingleton<EncounterService>();
 builder.Services.AddSingleton<ShippingService>();
 builder.Services.AddSingleton<FinanceService>();
+builder.Services.AddSingleton<IntelService>();
 builder.Services.AddSingleton<GameEngine>();
 builder.Services.AddSingleton<ILocalStore, IndexedDbStore>();
 builder.Services.AddSingleton<HighScoreService>();

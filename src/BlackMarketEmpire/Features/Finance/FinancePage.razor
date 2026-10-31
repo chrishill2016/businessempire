@@ -155,7 +155,7 @@
         try
         {
             var outcome = await action(amount);
-            Snackbar.Add(outcome.Message, outcome.Success ? Severity.Normal : Severity.Warning);
+            Snackbar.Notify(outcome.Message, outcome.Success);
             if (Session.State is { PendingEncounter: not null } or { IsOver: true }) Nav.NavigateTo("play");
         }
         finally

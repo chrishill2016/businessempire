@@ -1,0 +1,203 @@
+@page "/intel"
+@inject GameSession Session
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Intel · Black Market Empire</PageTitle>
+
+<div class="page">
+    @if (Session.State is { } s)
+    {
+        var rules = Session.Engine.Rules;
+        var city = GameCatalog.City(s.CityId).Name;
+        var trust = s.TrustIn(s.CityId);
+        <div class="d-flex align-center justify-space-between mb-3">
+            <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Crew" Size="24" /><span class="display" style="font-size:1.2rem">INTEL</span></div>
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => Nav.NavigateTo("play"))">Back</MudButton>
+        </div>
+
+        <div class="panel pa-3 d-flex justify-space-between align-center">
+            <div>
+                <div class="eyebrow">Your people in @city</div>
+                <div class="muted" style="font-size:.85rem">Pay them and they trust you more: better accuracy, better odds.</div>
+            </div>
+            <span class="stars intel-trust" title="Trust">@(new string('★', trust))<span class="muted">@(new string('★', IntelService.MaxTrust - trust))</span></span>
+        </div>
+
+        @* ----- Informants ----- *@
+        var rumours = s.News.Where(n => n.Status == NewsStatus.Rumour).ToList();
+        <div class="eyebrow mt-5 mb-2">Check a rumour</div>
+        <div class="panel">
+            @if (rumours.Count == 0)
+            {
+                <div class="pa-3 muted">No unverified rumours right now.</div>
+            }
+            @foreach (var n in rumours)
+            {
+                <div class="pa-3 rumour-row" data-news="@n.Id">
+                    <div class="d-flex align-center gap-2 flex-wrap">
+                        <span class="news-meta">DAY @n.Day · @GameCatalog.City(n.CityId).Name.ToUpperInvariant()</span>
+                        <span class="news-kind @(n.Kind == MarketEventKind.Spike ? "spike" : "crash")">@NewsFeed.KindLabel(n.Kind)</span>
+                    </div>
+                    <div class="news-headline">@n.Headline</div>
+                    @if (n.InformantSaysTrue is { } says)
+                    {
+                        <div class="@(says ? "positive" : "negative") mt-1 informant-verdict" style="font-size:.9rem">
+                            @NewsFeed.VerdictText(n)
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex gap-2 mt-2">
+                            <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(_busy || s.Cash < rules.StreetCheckPrice)"
+                                       OnClick="@(() => Run(() => Session.CheckRumourAsync(n.Id, InformantTier.Street)))">
+                                Street · @Money.Format(rules.StreetCheckPrice) · @Pct(IntelService.Accuracy(s, rules, InformantTier.Street))
+                            </MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.Cash < rules.ConnectedCheckPrice)"
+                                       OnClick="@(() => Run(() => Session.CheckRumourAsync(n.Id, InformantTier.Connected)))">
+                                Connected · @Money.Format(rules.ConnectedCheckPrice) · @Pct(IntelService.Accuracy(s, rules, InformantTier.Connected))
+                            </MudButton>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="muted mt-1" style="font-size:.85rem">A connected informant also tells you exactly how big a real spike or crash is and when it ends.</div>
+
+        @* ----- Tip-off ----- *@
+        <div class="eyebrow mt-5 mb-2">Advance warning</div>
+        <div class="panel pa-4">
+            <div class="muted" style="font-size:.9rem">
+                Some spikes and crashes are set up days before anyone hears about them. Pay for a tip-off to find out first, so you can be there early.
+                If nothing's brewing you'll hear about the next police crackdown instead. No charge if there's nothing at all.
+            </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3" Disabled="@(_busy || s.Cash < rules.TipOffPrice)"
+                       OnClick="@(() => Run(Session.BuyTipOffAsync))">Buy a tip-off · @Money.Format(rules.TipOffPrice)</MudButton>
+        </div>
+
+        @* ----- Market contacts ----- *@
+        <div class="eyebrow mt-5 mb-2">Market contacts</div>
+        <div class="panel pa-4">
+            <div class="muted" style="font-size:.9rem">Get today's prices in another city, what's spiking or crashing there, and whether the police are cracking down.</div>
+            <div class="d-flex gap-2 align-center mt-3">
+                <MudSelect T="string" @bind-Value="_contactCity" Label="City" Variant="Variant.Outlined" Dense="true" Class="flex-grow-1">
+                    @foreach (var c in GameCatalog.Cities.Where(c => c.Id != s.CityId))
+                    {
+                        <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.Cash < rules.ContactPrice || string.IsNullOrEmpty(_contactCity))"
+                           OnClick="@(() => Run(() => Session.BuyContactReportAsync(_contactCity)))">@Money.Format(rules.ContactPrice)</MudButton>
+            </div>
+            @if (!string.IsNullOrEmpty(_contactCity) && s.ContactReports.TryGetValue(_contactCity, out var report))
+            {
+                <div class="contact-report mt-3" data-report="@report.CityId">
+                    <div class="eyebrow">@GameCatalog.City(report.CityId).Name · day @report.Day@(report.Day < s.Day ? " (old news)" : "")</div>
+                    @if (report.Crackdown)
+                    {
+                        <div class="negative mt-1">🚨 Police crackdown</div>
+                    }
+                    @foreach (var e in report.Events)
+                    {
+                        <div class="@(e.Kind == MarketEventKind.Spike ? "spike" : "crash") mt-1" style="font-size:.9rem">
+                            @(e.Kind == MarketEventKind.Spike ? "▲" : "▼") @GameCatalog.Good(e.GoodId).Name ×@e.Multiplier.ToString("0.0") until day @e.EndDay
+                        </div>
+                    }
+                    <div class="contact-prices mt-2">
+                        @foreach (var (goodId, price) in report.Prices.OrderBy(p => GameCatalog.Good(p.Key).MinPrice))
+                        {
+                            var g = GameCatalog.Good(goodId);
+                            <span>@g.Icon @Money.Format(price)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* ----- Fixer ----- *@
+        <div class="eyebrow mt-5 mb-2">Fixer</div>
+        <div class="panel pa-4">
+            <div class="muted" style="font-size:.9rem">
+                Pay a fixer to cause a shortage, so prices spike in a city two days from now. Be there with stock to sell.
+                They don't always deliver, and you won't know until it should have started.
+            </div>
+            <MudSelect T="string" @bind-Value="_fixCity" Label="City" Variant="Variant.Outlined" Dense="true" Class="mt-3"
+                       @bind-Value:after="OnFixCityChanged">
+                @foreach (var c in GameCatalog.Cities)
+                {
+                    <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string" @bind-Value="_fixGood" Label="Good" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                @foreach (var g in GameCatalog.Goods.Where(g => g.TradedIn(_fixCity)))
+                {
+                    <MudSelectItem Value="@g.Id">@g.Icon @g.Name</MudSelectItem>
+                }
+            </MudSelect>
+            @if (!string.IsNullOrEmpty(_fixGood))
+            {
+                var price = IntelService.FixerPrice(rules, _fixGood);
+                <div class="d-flex justify-space-between align-center mt-3">
+                    <span>@Money.Format(price) · @Pct(IntelService.FixerChance(s, rules)) chance it comes off</span>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.Cash < price)"
+                               OnClick="@(() => Run(() => Session.ArrangeShortageAsync(_fixCity, _fixGood)))">Arrange</MudButton>
+                </div>
+            }
+        </div>
+
+        @* ----- Crackdowns ----- *@
+        var known = s.Crackdowns.Where(c => c.Known).OrderBy(c => c.StartDay).ToList();
+        @if (known.Count > 0)
+        {
+            <div class="eyebrow mt-5 mb-2">Known crackdowns</div>
+            <div class="panel pa-3">
+                @foreach (var c in known)
+                {
+                    <div class="d-flex justify-space-between py-1 crackdown-row">
+                        <span>🚨 @GameCatalog.City(c.CityId).Name</span>
+                        <span class="negative">days @c.StartDay–@c.EndDay</span>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool _busy;
+    private string _contactCity = "";
+    private string _fixCity = "";
+    private string _fixGood = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.LoadAsync();
+        if (Session.State is { IsOver: true }) Nav.NavigateTo("game-over");
+        if (Session.State is { } s)
+        {
+            _contactCity = GameCatalog.Cities.First(c => c.Id != s.CityId).Id;
+            _fixCity = s.CityId;
+            OnFixCityChanged();
+        }
+    }
+
+    private void OnFixCityChanged() =>
+        _fixGood = GameCatalog.Goods.FirstOrDefault(g => g.TradedIn(_fixCity) && g.Id == _fixGood)?.Id
+                   ?? GameCatalog.Goods.First(g => g.TradedIn(_fixCity)).Id;
+
+    private static string Pct(double chance) => $"{Math.Round(chance * 100)}%";
+
+    private async Task Run(Func<Task<ActionResult>> action)
+    {
+        _busy = true;
+        try
+        {
+            var result = await action();
+            Snackbar.Notify(result.Message, result.Success);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

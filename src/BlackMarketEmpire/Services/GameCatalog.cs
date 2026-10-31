@@ -104,7 +104,7 @@ public static class GameCatalog
         new("trolley", "Wheeled trunk", "🧳", 4_000, "+100 suitcase space."),
         new("lining", "Hidden-lining case", "🕳️", 2_500, "Stopped 30% less often. Seized if you're arrested.", SeizedOnArrest: true),
         new("docs", "Fake documents", "🪪", 3_000, "Halves the chance of being stopped when flying or by boat. Seized if you're arrested.", SeizedOnArrest: true),
-        new("scanner", "Police scanner app", "📡", 800, "Shows the exact chance of being stopped on every route, and the heat in every city."),
+        new("scanner", "Police scanner app", "📡", 800, "Shows the exact chance of being stopped on every route, the heat in every city, and police crackdowns as they're planned."),
         new("burners", "Burner phones", "📵", 600, "Big deals are far less likely to be stings."),
         new("shoes", "Running shoes", "👟", 300, "+10% chance when you run."),
         new("armour", "Body armour", "🦺", 2_000, "Take 40% less damage."),

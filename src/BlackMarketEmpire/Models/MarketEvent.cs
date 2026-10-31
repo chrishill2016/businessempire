@@ -17,7 +17,12 @@ public sealed record MarketEvent(
     MarketEventKind Kind,
     double Multiplier,
     int StartDay,
-    int EndDay)
+    int EndDay,
+    /// <summary>False for events planned in secret: nobody's heard about them until they start (or someone sells you a tip).</summary>
+    bool Announced = true,
+    Guid Id = default)
 {
+    public int Days => EndDay - StartDay + 1;
+
     public bool IsActiveOn(int day) => day >= StartDay && day <= EndDay;
 }

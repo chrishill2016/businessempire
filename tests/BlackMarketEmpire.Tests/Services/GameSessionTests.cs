@@ -100,6 +100,24 @@ public class GameSessionTests
     }
 
     [Fact]
+    public async Task Intel_survives_an_app_restart()
+    {
+        var first = NewSession();
+        await first.StartNewAsync();
+        first.State!.Cash = 50_000;
+        await first.BuyContactReportAsync("dubai");
+        await first.ArrangeShortageAsync("dubai", "watches");
+
+        var second = NewSession();
+        await second.LoadAsync();
+
+        Assert.True(second.State!.ContactReports.ContainsKey("dubai"));
+        Assert.Contains(second.State.News, n => n.Status == NewsStatus.Tip && n.StartsDay == 3);
+        Assert.Equal(first.State.TrustIn("london"), second.State.TrustIn("london"));
+        Assert.Equal(first.State.Events.Select(e => e.Id), second.State.Events.Select(e => e.Id));
+    }
+
+    [Fact]
     public async Task Changed_fires_only_on_successful_actions()
     {
         var session = NewSession();

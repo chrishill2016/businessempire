@@ -18,11 +18,15 @@
         @foreach (var city in cities)
         {
             var options = Engine.TravelOptions(State, city.Id);
-            var intel = State.News.Where(n => n.CityId == city.Id && n.Status == NewsStatus.Rumour).ToList();
+            var intel = State.News.Where(n => n.CityId == city.Id && n.Status is NewsStatus.Rumour or NewsStatus.Tip).ToList();
             var heat = State.HeatIn(city.Id);
             <div class="travel-city panel pa-3 mt-3" data-city="@city.Id">
                 <div class="d-flex justify-space-between align-center">
                     <span><b>@city.Name</b> <span class="muted">@city.Country</span> <span class="danger-@city.Danger.ToString().ToLowerInvariant()" style="font-size:.8rem">· @city.Danger danger</span></span>
+                    @if (State.Crackdowns.FirstOrDefault(c => c.CityId == city.Id && c.Known && c.EndDay >= State.Day) is { } cd)
+                    {
+                        <span class="crackdown-badge" data-crackdown="@city.Id">🚨 Crackdown d@(cd.StartDay)–@(cd.EndDay)</span>
+                    }
                     @if (HasScanner && heat > 0)
                     {
                         <span class="negative" style="font-size:.85rem"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Heat @heat</span>
@@ -34,7 +38,7 @@
                         @foreach (var n in intel)
                         {
                             <span class="@(n.Kind == MarketEventKind.Spike ? "spike" : "crash")">
-                                @(n.Kind == MarketEventKind.Spike ? "▲" : "▼") @GameCatalog.Good(n.GoodId).Name <span class="muted">(rumour, day @n.Day)</span>
+                                @(n.Kind == MarketEventKind.Spike ? "▲" : "▼") @GameCatalog.Good(n.GoodId).Name <span class="muted">(@(n.Status == NewsStatus.Tip ? $"tip, from day {n.StartsDay}" : n.InformantSaysTrue is { } says ? (says ? "informant: real" : "informant: rubbish") : $"rumour, day {n.Day}"))</span>
                             </span>
                         }
                     </div>

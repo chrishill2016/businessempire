@@ -299,3 +299,72 @@ public class FinanceComponentTests : BunitContext
         Assert.Contains("Medium danger", cut.Markup);
     }
 }
+
+public class IntelComponentTests : BunitContext
+{
+    public IntelComponentTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+    }
+
+    [Fact]
+    public void NewsFeed_shows_tips_and_informant_verdicts()
+    {
+        NewsItem[] news =
+        [
+            new() { Day = 2, CityId = "bangkok", GoodId = "games", Kind = MarketEventKind.Crash, Headline = "Inside word", Status = NewsStatus.Tip, StartsDay = 4 },
+            new() { Day = 1, CityId = "dubai", GoodId = "phones", Kind = MarketEventKind.Spike, Headline = "Phones", Status = NewsStatus.Rumour,
+                    InformantSaysTrue = true, InformantAccuracy = 0.95, KnownMultiplier = 3.1, KnownEndDay = 7 },
+        ];
+
+        var cut = Render<NewsFeed>(p => p.Add(c => c.Items, news));
+
+        var items = cut.FindAll(".news-item");
+        Assert.Contains("INSIDER TIP", items[0].TextContent);
+        Assert.Contains("95% reliable", items[1].TextContent);
+        Assert.Contains("×3.1", items[1].TextContent);
+        Assert.Contains("day 7", items[1].TextContent);
+    }
+
+    [Fact]
+    public void StatusPanel_warns_about_a_known_crackdown_here()
+    {
+        var state = TestGame.Engine().NewGame();
+        state.Crackdowns.Add(new Crackdown { CityId = "london", StartDay = 1, EndDay = 4, Known = true });
+
+        var cut = Render<StatusPanel>(p => p.Add(c => c.State, state).Add(c => c.TotalDays, 30));
+
+        Assert.Contains("until day 4", cut.Find(".status-crackdown").TextContent);
+    }
+
+    [Fact]
+    public void StatusPanel_hides_an_unknown_crackdown()
+    {
+        var state = TestGame.Engine().NewGame();
+        state.Crackdowns.Add(new Crackdown { CityId = "london", StartDay = 1, EndDay = 4 });
+
+        var cut = Render<StatusPanel>(p => p.Add(c => c.State, state).Add(c => c.TotalDays, 30));
+
+        Assert.Empty(cut.FindAll(".status-crackdown"));
+    }
+}
+
+public class SnackbarTests : BunitContext
+{
+    [Fact]
+    public void Notify_replaces_game_messages_but_keeps_the_update_prompt()
+    {
+        Services.AddMudServices();
+        var snackbar = Services.GetRequiredService<MudBlazor.ISnackbar>();
+        snackbar.Add(BlackMarketEmpire.Shared.SnackbarExtensions.UpdateMessage, MudBlazor.Severity.Info, o => o.RequireInteraction = true);
+
+        BlackMarketEmpire.Shared.SnackbarExtensions.Notify(snackbar, "First");
+        BlackMarketEmpire.Shared.SnackbarExtensions.Notify(snackbar, "Second");
+
+        var messages = snackbar.ShownSnackbars.Select(s => s.Message).ToList();
+        Assert.Contains(BlackMarketEmpire.Shared.SnackbarExtensions.UpdateMessage, messages);
+        Assert.Contains("Second", messages);
+        Assert.DoesNotContain("First", messages);
+    }
+}
