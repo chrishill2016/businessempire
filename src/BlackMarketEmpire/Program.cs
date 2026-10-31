@@ -22,6 +22,7 @@ builder.Services.AddSingleton(GameRules.Default);
 builder.Services.AddSingleton<IRandomSource, SystemRandomSource>();
 builder.Services.AddSingleton<MarketService>();
 builder.Services.AddSingleton<EventService>();
+builder.Services.AddSingleton<EncounterService>();
 builder.Services.AddSingleton<GameEngine>();
 builder.Services.AddSingleton<ILocalStore, IndexedDbStore>();
 builder.Services.AddSingleton<HighScoreService>();

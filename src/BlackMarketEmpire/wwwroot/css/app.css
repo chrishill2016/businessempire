@@ -216,3 +216,11 @@ html, body {
 
 .intel-ticker { display: flex; align-items: center; gap: 8px; padding: 8px 12px; text-decoration: none; color: var(--bme-text-2); }
 .intel-ticker-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 0.92rem; }
+
+/* Encounters */
+.encounter-intro { font-size: 1.05rem; color: var(--bme-text); line-height: 1.4; }
+.encounter-last { color: var(--bme-text-2); }
+.encounter-choices { display: grid; gap: 10px; }
+.encounter-choices .mud-button-root { height: 48px; }
+.rap-sheet { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
+.rap-sheet .v { font-family: var(--bme-display); font-weight: 700; text-align: right; }

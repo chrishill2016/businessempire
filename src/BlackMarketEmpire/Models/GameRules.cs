@@ -27,5 +27,33 @@ public sealed record GameRules
     public double CrashMaxMultiplier { get; init; } = 0.5;
     public int MaxNewsItems { get; init; } = 20;
 
+    // ----- Police & danger (Phase 3) -----
+    public int MaxHealth { get; init; } = 100;
+    /// <summary>Health recovered for each day that passes.</summary>
+    public int HealthPerDay { get; init; } = 3;
+    /// <summary>Chance of being stopped on arrival when carrying goods, before cargo adjustments.</summary>
+    public double BaseStopChance { get; init; } = 0.12;
+    /// <summary>Extra stop chance per item carried.</summary>
+    public double StopChancePerUnit { get; init; } = 0.0015;
+    /// <summary>Extra stop chance per £10,000 of cargo (valued at what you paid).</summary>
+    public double StopChancePer10k { get; init; } = 0.02;
+    public double MaxStopChance { get; init; } = 0.45;
+    /// <summary>Trips this long or longer are flights, so you meet customs instead of street police.</summary>
+    public int CustomsTripDays { get; init; } = 2;
+    /// <summary>Chance a single buy/sell worth at least <see cref="BigDealValue"/> is an undercover sting.</summary>
+    public double StingChance { get; init; } = 0.06;
+    public long BigDealValue { get; init; } = 10_000;
+    /// <summary>Chance a run succeeds, before the weight of your cargo slows you down.</summary>
+    public double PoliceRunChance { get; init; } = 0.55;
+    public double CustomsRunChance { get; init; } = 0.35;
+    public double RunPenaltyPerUnit { get; init; } = 0.002;
+    public double PoliceBribeChance { get; init; } = 0.75;
+    public double CustomsBribeChance { get; init; } = 0.5;
+    public double PoliceFightChance { get; init; } = 0.3;
+    public double CustomsFightChance { get; init; } = 0.2;
+    public long MinBribe { get; init; } = 300;
+    /// <summary>Fine on arrest, as a share of your cash.</summary>
+    public double ArrestFine { get; init; } = 0.2;
+
     public static GameRules Default { get; } = new();
 }

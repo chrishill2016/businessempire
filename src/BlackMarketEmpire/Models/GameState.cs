@@ -14,6 +14,7 @@ public sealed class GameState
     public long Cash { get; set; }
     public long Debt { get; set; }
     public int Capacity { get; set; }
+    public int Health { get; set; } = 100;
 
     /// <summary>Units held, keyed by good id.</summary>
     public Dictionary<string, int> Inventory { get; set; } = [];
@@ -33,7 +34,13 @@ public sealed class GameState
     /// <summary>Most recent messages first.</summary>
     public List<string> Log { get; set; } = [];
 
+    /// <summary>A police stop waiting for the player's choice. Blocks all other actions.</summary>
+    public Encounter? PendingEncounter { get; set; }
+
+    public RunStats Stats { get; set; } = new();
+
     public bool IsOver { get; set; }
+    public EndReason EndReason { get; set; }
     public DateTime StartedUtc { get; set; } = DateTime.UtcNow;
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
 

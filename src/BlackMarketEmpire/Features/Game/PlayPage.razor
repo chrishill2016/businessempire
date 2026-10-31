@@ -82,6 +82,40 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Resume an encounter that was in progress when the app was closed.
+        if (firstRender && Session.State is { IsOver: false, PendingEncounter: not null })
+        {
+            await HandleEncounters();
+        }
+    }
+
+    /// <summary>Keeps showing the encounter until it's resolved (a failed run means they're still after you).</summary>
+    private async Task HandleEncounters()
+    {
+        while (Session.State is { IsOver: false, PendingEncounter: not null } state)
+        {
+            var parameters = new DialogParameters<EncounterDialog>
+            {
+                { d => d.State, state },
+                { d => d.Rules, Session.Engine.Rules },
+            };
+            var options = new DialogOptions { BackdropClick = false, CloseOnEscapeKey = false, CloseButton = false };
+            var dialog = await Dialogs.ShowAsync<EncounterDialog>(null, parameters, options);
+            var result = await dialog.Result;
+            if (result is not { Canceled: false, Data: EncounterChoice choice }) continue;
+
+            var outcome = await Session.ResolveEncounterAsync(choice);
+            Snackbar.Add(outcome.Message, outcome.Success ? Severity.Normal : Severity.Warning);
+            StateHasChanged();
+        }
+        if (Session.State is { IsOver: true })
+        {
+            Nav.NavigateTo("game-over");
+        }
+    }
+
     private async Task OpenTrade((Good Good, TradeMode Mode) args)
     {
         var state = Session.State!;
@@ -158,6 +192,12 @@
         try
         {
             var result = await action();
+            if (Session.State is { PendingEncounter: not null })
+            {
+                StateHasChanged();
+                await HandleEncounters();
+                return;
+            }
             Snackbar.Add(result.Message, result.Success ? Severity.Normal : Severity.Warning);
             if (Session.State is { IsOver: true })
             {

@@ -150,3 +150,46 @@ public class NeonComponentTests : BunitContext
         Assert.Equal("EMPIRE", cut.Find(".wm-bottom").TextContent);
     }
 }
+
+public class EncounterComponentTests : BunitContext
+{
+    public EncounterComponentTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+    }
+
+    [Fact]
+    public void RapSheet_shows_stats_and_reality_check()
+    {
+        var stats = new RunStats { Stops = 3, Arrests = 1, Escapes = 2, BribesPaid = 500 };
+
+        var cut = Render<RapSheet>(p => p.Add(c => c.Stats, stats).Add(c => c.Reason, EndReason.Finished));
+
+        Assert.Contains("£500", cut.Markup);
+        Assert.Contains("arrested 1 time.", cut.Find(".reality-check").TextContent);
+    }
+
+    [Theory]
+    [InlineData(EndReason.Killed, 0, 0, "no restart")]
+    [InlineData(EndReason.Finished, 2, 0, "odds catch up")]
+    [InlineData(EndReason.Retired, 0, 0, "That was luck")]
+    public void Reality_check_matches_how_the_run_went(EndReason reason, int stops, int arrests, string expected)
+    {
+        var text = RapSheet.RealityCheck(reason, new RunStats { Stops = stops, Arrests = arrests });
+
+        Assert.Contains(expected, text);
+    }
+
+    [Fact]
+    public void StatusPanel_shows_health()
+    {
+        var state = TestGame.Engine().NewGame();
+        state.Health = 30;
+
+        var cut = Render<StatusPanel>(p => p.Add(c => c.State, state).Add(c => c.TotalDays, 30));
+
+        Assert.Equal("30", cut.Find(".status-health").TextContent);
+        Assert.Contains("negative", cut.Find(".status-health").ClassName);
+    }
+}

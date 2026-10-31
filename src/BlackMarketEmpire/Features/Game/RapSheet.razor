@@ -1,0 +1,33 @@
+<div class="panel pa-4">
+    <div class="d-flex align-center gap-2 mb-3">
+        <NeonIcon Kind="NeonIconKind.Heat" Size="18" />
+        <span class="eyebrow">Rap sheet</span>
+    </div>
+    <div class="rap-sheet">
+        <span>Times stopped</span><span class="v">@Stats.Stops</span>
+        <span>Escapes</span><span class="v">@Stats.Escapes</span>
+        <span>Arrests</span><span class="v @(Stats.Arrests > 0 ? "negative" : null)">@Stats.Arrests</span>
+        <span>Days in jail</span><span class="v">@Stats.DaysInJail</span>
+        <span>Bribes paid</span><span class="v">@Money.Format(Stats.BribesPaid)</span>
+        <span>Fines paid</span><span class="v">@Money.Format(Stats.FinesPaid)</span>
+        <span>Goods seized</span><span class="v">@Stats.GoodsSeized (@Money.Format(Stats.GoodsSeizedValue))</span>
+        <span>Damage taken</span><span class="v @(Stats.DamageTaken > 0 ? "negative" : null)">@Stats.DamageTaken</span>
+    </div>
+    <div class="mt-4 reality-check" style="color:var(--bme-text-2);line-height:1.4">@RealityCheck(Reason, Stats)</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RunStats Stats { get; set; } = new();
+    [Parameter] public EndReason Reason { get; set; }
+
+    public static string RealityCheck(EndReason reason, RunStats stats) => reason switch
+    {
+        EndReason.Killed =>
+            "In real life there's no restart. Smuggling networks are violent, and the people who carry the goods are the ones who get hurt, locked up or killed.",
+        _ when stats.Arrests > 0 =>
+            $"You were arrested {stats.Arrests} time{(stats.Arrests == 1 ? "" : "s")}. In reality, a smuggling conviction means years in prison and a criminal record that follows you for life. Nobody lets you back out after a couple of days.",
+        _ when stats.Stops > 0 =>
+            "You talked, paid or ran your way out every time. In real life the odds catch up with you, and one bad stop is enough.",
+        _ => "You never got stopped. That was luck. Real smuggling has no restart button.",
+    };
+}

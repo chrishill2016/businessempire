@@ -22,14 +22,20 @@ Each phase ships as its own pull request into `main`.
 - [x] SPIKE / CRASH badges on affected goods in the market
 - [ ] Ideas for later: paid informants who tell you which rumours are true, events that hit a whole region, "insider tip" events with bigger multipliers
 
-## Phase 3 — Danger: police & customs
-- [ ] Random encounters while travelling or trading
-- [ ] Choices: run, bribe, fight, surrender
-- [ ] Health; injuries; death ends the run
-- [ ] Losing goods/cash when caught; jail time costs days
-- [ ] End-of-run consequences message (the real-world message: crime doesn't pay)
+## Phase 3 — Danger: police & customs ✅
+- [x] Stopped on arrival when carrying goods; the more (and the more valuable) you carry, the likelier it is
+- [x] Street police on short trips, stricter customs after long-haul (2+ day) trips
+- [x] Undercover stings on big deals (£10k+)
+- [x] Choices: run, bribe, fight, surrender, with the odds shown
+- [x] Health (100), recovers 3 a day; failed runs and fights hurt; death ends the run and your cash dies with you
+- [x] Arrest: all goods seized, 20% fine, 1–4 days in jail (debt keeps growing)
+- [x] Rap sheet and a short reality check on the game-over screen; ☠ marks deaths in high scores
+- [ ] Later: gangs/muggers as well as police, hospital visits to heal faster, lawyers to cut jail time
 
 ## Phase 4 — Smuggling logistics
+- [ ] **Travel costs money** — every trip has a ticket/fuel price based on distance and travel method, so moving isn't free
+  - Prices vary by method (bus cheapest, flights dearest) and can spike with events (strikes, fuel crisis)
+  - Can't travel if you can't afford the fare — plan your cash before you sell out
 - [ ] **Travel methods** with different time / cost / risk:
   - Bus/train — cheap, slow, moderate checks
   - Car — medium, random roadblocks
@@ -47,10 +53,39 @@ Each phase ships as its own pull request into `main`.
   - Contacts/informants who warn about crackdowns
 - [ ] **Heat / wanted level** per city — rises with big trades and encounters, cools over time
 
+### Gear shop
+Spend cash on gear that sticks with you for the rest of the run. Each item is a trade-off between spending now and earning or surviving later.
+- [ ] **Capacity:** bigger holdall (+50), wheeled case (+100), hire van (+250; road travel only)
+- [ ] **Avoiding police:**
+  - Hidden-lining suitcase: lowers the chance you're stopped
+  - Fake documents: big bonus against customs/airport checks
+  - Police scanner app: warns you about a crackdown before you travel
+  - Burner phones: harder to trace, lowers sting chance on big deals
+- [ ] **Escaping:** running shoes (better run odds), a fast car (much better run odds on road trips)
+- [ ] **Survival:** body armour (cuts damage taken), first-aid kit (heal once when hurt)
+- [ ] **Bribing:** a "friend in the force" contact who makes bribes cheaper and more likely to work in one city
+- [ ] Gear can be **lost**: seized on arrest, or stolen in a mugging, so it's a risk, not a guaranteed upgrade
+- [ ] Some gear is only sold in certain cities, and prices vary like goods
+
 ## Phase 5 — Economy depth
-- [ ] Bank (safe deposit) and loan shark with interest
+- [ ] **Loans:** borrow more money mid-run to fund bigger deals
+  - **Several loan sharks**, each with their own terms and personality, for example:
+    - *"Fast Eddie"* (London): small loans, 8%/day, forgiving if you're a day late
+    - *"The Accountant"* (Amsterdam): bigger loans, 4%/day, strict deadlines, no extensions
+    - *"Mama Rossi"* (Marseille): mid-size, 6%/day, sends enforcers the day you're overdue
+    - Each lender only operates in certain cities, so you have to be there to borrow or repay
+  - **Reputation decides your rates.** Each lender tracks how you've treated them:
+    - Repay on time or early → lower interest, higher borrowing limits, longer deadlines
+    - Pay late or skip repayments → higher rates, smaller limits, and eventually they won't lend to you at all
+    - A big arrest record or a lot of heat makes every lender nervous (worse rates across the board)
+    - Reputation shown as a simple rating per lender (e.g. ★–★★★★★) with the rate they'd offer you now
+  - **Bank loan:** cheaper interest, but only in some cities and only if your net worth is good enough. It's refused if your rap sheet has arrests.
+  - **Underground lender** in certain cities: big sums, but miss the repayment date and their enforcers come after you (health damage, goods taken)
+  - Repayment deadlines: if a loan is overdue, interest rises, and loan-shark "visits" can happen when you arrive in a city
+  - Any unpaid loans are taken off your final score, like the starting debt
+- [ ] **Bank (safe deposit):** keep cash safe from fines, muggings and death. Small interest, and only usable in cities with a branch.
 - [ ] Stash houses in cities (store goods; can be raided)
-- [ ] Capacity upgrades (bigger bag, van, warehouse)
+- [ ] Warehouse / storage space (see the Phase 4 gear shop for carried-capacity upgrades)
 - [ ] City risk profiles (some cities lucrative but dangerous)
 
 ## Phase 6 — Bigger world & score history
