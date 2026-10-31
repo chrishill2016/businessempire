@@ -70,7 +70,11 @@ public sealed class GameState
     [JsonIgnore]
     public int UnitsHeld => Inventory.Values.Sum();
     [JsonIgnore]
-    public int FreeSpace => Capacity - UnitsHeld;
+    public int FreeSpace => Capacity - SpaceUsed;
+
+    /// <summary>Suitcase space used: bulky goods take more than one slot each.</summary>
+    [JsonIgnore]
+    public int SpaceUsed => Services.GameCatalog.SpaceFor(Inventory);
     /// <summary>Starting debt plus every loan still owed.</summary>
     [JsonIgnore]
     public long TotalDebt => Debt + Loans.Where(l => l.Status == LoanStatus.Active).Sum(l => l.Owed);

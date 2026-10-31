@@ -68,19 +68,31 @@ Each phase ships as its own pull request into `main`.
 - [x] Score = cash + bank − everything owed; if you're killed, the bank still counts and the debts still count
 - [ ] Later: loan extensions for good customers, lenders who sell your debt on, insurance on stashes, the bank freezing your account if your heat gets too high
 
-## Phase 6 — Bigger world & score history
-- [ ] **More cities** — e.g. New York, Miami, Bogotá, Lagos, Bangkok, Sydney, Moscow, Naples
-  - Regions/continents so long-haul trips take longer (and later need flights)
-  - Some cities only reachable by certain travel methods (ties into Phase 4)
-- [ ] **More goods** — e.g. untaxed fuel, pirated games, counterfeit cash, rare wildlife parts (high risk), stolen car parts, fake medicines, cloned bank cards, rare whisky
-  - Goods with different sizes (a painting takes more suitcase space than a phone)
-  - Region-specific goods only sold in certain cities
-- [ ] **Top 100 high scores** kept on the device (currently top 10)
-  - Each entry shows the **run's start and end dates** (start date is already saved with each run)
-  - Extra details per entry: days played, how the run ended (finished / retired early / arrested / killed), best single trade
-  - Scroll/paginate the table, highlight your latest run, option to clear scores
+## Phase 6 — Bigger world & score history ✅
+- [x] **14 cities in 4 regions:** Europe (London, Amsterdam, Marseille, Naples, Moscow, Istanbul), Middle East & Africa (Dubai, Lagos), Asia-Pacific (Hong Kong, Bangkok, Sydney), Americas (New York, Miami, Bogotá)
+  - Travel time from real distances: 1–4 days (Sydney is a long way from anywhere)
+  - Road and rail only within linked groups (Europe; Istanbul–Dubai; Hong Kong–Bangkok; New York–Miami)
+  - Bogotá and Moscow have no port (flights, or overland for Moscow); London has none either
+  - New lender Don Carlos (Miami, Bogotá, Lagos); lenders and the bank spread to the new cities
+- [x] **14 goods**, adding pirated games, untaxed fuel, fake medicines, cloned bank cards, stolen car parts and counterfeit cash
+  - **Sizes:** fuel and art take 3 spaces each, car parts 4
+  - **Region-specific:** fuel, bank cards, car parts and counterfeit cash only trade in certain cities
+- [x] **Top 100 high scores** with start/end date and time, days played, how the run ended, best single trade; latest run highlighted; "show more" paging; clear all scores
+- [ ] Later: a world map view, seasonal routes/closures, arrested as an end reason when a jail term outlasts the run
 
-## Phase 7 — Polish
+## Phase 7 — Intel network
+Better information means better trades, at a price.
+- [ ] **Informants** you pay in each city:
+  - Tell you whether a rumour is true **before** you travel (with a reliability rating that improves the more you use them)
+  - Cheap informants are wrong sometimes; expensive ones rarely
+- [ ] **Advance warning:** hear about a spike or crash a day or two **before it starts**, so you can be there early or stock up beforehand
+- [ ] **Insider tips:** rare, expensive tips that boost the chance of an event actually happening in a city, or tell you the exact multiplier and how long it lasts
+- [ ] **Market contacts:** see today's prices in another city without travelling (one city per contact)
+- [ ] **Crackdown warnings:** know when a city's police are about to clamp down (higher stop chance for a few days)
+- [ ] Intel can be **planted**: rival crews feed you false tips on purpose, and the best informants help you spot them
+- [ ] Ties in with reputation: informants trust you more (better, cheaper intel) if you pay well and don't get them burned
+
+## Phase 8 — Polish
 - [ ] Sound and haptics
 - [ ] Run statistics, achievements
 - [ ] Difficulty modes / seeded "daily challenge"

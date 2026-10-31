@@ -81,7 +81,9 @@ public sealed class EventService(IRandomSource random)
         do
         {
             cityId = GameCatalog.Cities[random.Next(0, GameCatalog.Cities.Count)].Id;
-            goodId = GameCatalog.Goods[random.Next(0, GameCatalog.Goods.Count)].Id;
+            var city = cityId;
+            var traded = GameCatalog.Goods.Where(g => g.TradedIn(city)).ToList();
+            goodId = traded[random.Next(0, traded.Count)].Id;
         }
         while (++attempts < 20 && (ActiveEvent(state, cityId, goodId) is not null
                                    || state.News.Any(n => n.CityId == cityId && n.GoodId == goodId && n.Day == state.Day)));

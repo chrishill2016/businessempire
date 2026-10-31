@@ -47,13 +47,13 @@
             <div class="panel pa-4 mb-3">
                 <div class="d-flex justify-space-between">
                     <span class="eyebrow">@(stash.Tier == StashTier.Warehouse ? "Warehouse" : "Lock-up")</span>
-                    <span class="money stash-usage">@stash.Units / @cap</span>
+                    <span class="money stash-usage">@stash.SpaceUsed / @cap</span>
                 </div>
-                <div class="meter my-2"><div style="width:@(stash.Units * 100 / cap)%"></div></div>
+                <div class="meter my-2"><div style="width:@(stash.SpaceUsed * 100 / cap)%"></div></div>
                 <div class="muted" style="font-size:.85rem">Raid chance today: @Math.Round(FinanceService.RaidChance(s, rules, stash) * 100, 1)%</div>
             </div>
 
-            <div class="eyebrow mb-2">In your suitcase (@s.UnitsHeld / @s.Capacity)</div>
+            <div class="eyebrow mb-2">In your suitcase (@s.SpaceUsed / @s.Capacity space)</div>
             <div class="panel mb-3">
                 @if (s.Inventory.Count == 0) { <div class="pa-3 muted">Empty.</div> }
                 @foreach (var (id, qty) in s.Inventory.ToList())
@@ -62,7 +62,7 @@
                     <div class="d-flex align-center gap-2 px-3 py-2 market-row" data-carry="@id">
                         <span class="good-icon">@g.Icon</span>
                         <span class="flex-grow-1">@g.Name × @qty</span>
-                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(_busy || stash.Units >= cap)"
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(_busy || stash.SpaceUsed + g.Size > cap)"
                                    OnClick="@(() => Run(() => Session.StoreAsync(id, qty)))">Stash all</MudButton>
                     </div>
                 }
@@ -77,7 +77,7 @@
                     <div class="d-flex align-center gap-2 px-3 py-2 market-row" data-stashed="@id">
                         <span class="good-icon">@g.Icon</span>
                         <span class="flex-grow-1">@g.Name × @qty</span>
-                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.FreeSpace == 0)"
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.FreeSpace < g.Size)"
                                    OnClick="@(() => Run(() => Session.TakeFromStashAsync(id, qty)))">Take</MudButton>
                     </div>
                 }

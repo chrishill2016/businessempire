@@ -6,7 +6,7 @@ namespace BlackMarketEmpire.Services;
 public sealed class HighScoreService(ILocalStore store)
 {
     public const string StorageKey = "highscores";
-    public const int MaxEntries = 10;
+    public const int MaxEntries = 100;
 
     public async Task<IReadOnlyList<HighScore>> GetTopAsync() =>
         await store.GetAsync<List<HighScore>>(StorageKey) ?? [];

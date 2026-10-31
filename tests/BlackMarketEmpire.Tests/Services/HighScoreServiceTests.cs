@@ -27,16 +27,38 @@ public class HighScoreServiceTests
     }
 
     [Fact]
-    public async Task Only_top_ten_are_kept()
+    public async Task Only_top_hundred_are_kept()
     {
-        for (var i = 1; i <= 10; i++) await _service.AddAsync(Score(i * 100));
+        for (var i = 1; i <= 100; i++) await _service.AddAsync(Score(i * 100));
 
         var rank = await _service.AddAsync(Score(50));
 
         Assert.Null(rank);
         var top = await _service.GetTopAsync();
-        Assert.Equal(10, top.Count);
+        Assert.Equal(100, top.Count);
         Assert.DoesNotContain(top, s => s.Score == 50);
+    }
+
+    [Fact]
+    public async Task Run_details_are_kept()
+    {
+        var started = new DateTime(2026, 10, 31, 9, 0, 0, DateTimeKind.Utc);
+        await _service.AddAsync(new HighScore(Guid.NewGuid(), 9_000, started.AddMinutes(40), "Dubai", EndReason.Retired, started, 21, 4_500));
+
+        var s = Assert.Single(await _service.GetTopAsync());
+        Assert.Equal(started, s.StartedUtc);
+        Assert.Equal(21, s.DaysPlayed);
+        Assert.Equal(4_500, s.BestTrade);
+        Assert.Equal(EndReason.Retired, s.Reason);
+    }
+
+    [Fact]
+    public async Task Clear_removes_everything()
+    {
+        await _service.AddAsync(Score(1));
+        await _service.ClearAsync();
+
+        Assert.Empty(await _service.GetTopAsync());
     }
 
     [Fact]

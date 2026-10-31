@@ -4,26 +4,71 @@
 }
 else
 {
-    <MudSimpleTable Dense="true" Hover="false" Striped="true">
-        <thead>
-            <tr><th>#</th><th>Score</th><th>Ended in</th><th>Date</th></tr>
-        </thead>
-        <tbody>
-            @for (var i = 0; i < Scores.Count; i++)
-            {
-                var s = Scores[i];
-                <tr class="@(s.RunId == Highlight ? "score-me" : null)">
-                    <td>@(i + 1)</td>
-                    <td class="money @(s.Score < 0 ? "negative" : "positive")">@Money.Format(s.Score)</td>
-                    <td>@s.FinalCity@(s.Reason == EndReason.Killed ? " ☠" : null)</td>
-                    <td>@s.AchievedUtc.ToLocalTime().ToString("d MMM yy")</td>
-                </tr>
-            }
-        </tbody>
-    </MudSimpleTable>
+    <div class="panel">
+        @for (var i = 0; i < Math.Min(_shown, Scores.Count); i++)
+        {
+            var s = Scores[i];
+            var isHighlight = s.RunId == HighlightId;
+            <div class="score-row @(isHighlight ? "score-me" : null)" data-rank="@(i + 1)">
+                <div class="score-rank">@(i + 1)</div>
+                <div class="flex-grow-1" style="min-width:0">
+                    <div class="d-flex align-center gap-2 flex-wrap">
+                        <span class="money @(s.Score < 0 ? "negative" : "positive")" style="font-size:1.1rem">@Money.Format(s.Score)</span>
+                        <span class="event-badge @OutcomeClass(s.Reason)">@OutcomeLabel(s.Reason)</span>
+                        @if (isHighlight)
+                        {
+                            <span class="event-badge spike">LATEST</span>
+                        }
+                    </div>
+                    <div class="muted score-dates" style="font-size:.85rem">@Dates(s)</div>
+                    <div class="muted" style="font-size:.85rem">
+                        Ended in @s.FinalCity@(s.DaysPlayed > 0 ? $" · day {s.DaysPlayed}" : "")@(s.BestTrade > 0 ? $" · best trade {Money.Format(s.BestTrade)}" : "")
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    @if (Scores.Count > _shown)
+    {
+        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Class="mt-2" OnClick="@(() => _shown += PageSize)">
+            Show more (@(Scores.Count - _shown) left)
+        </MudButton>
+    }
 }
 
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<HighScore> Scores { get; set; } = [];
+    /// <summary>Run to highlight. Defaults to the most recently finished run.</summary>
     [Parameter] public Guid? Highlight { get; set; }
+    [Parameter] public int PageSize { get; set; } = 20;
+
+    private int _shown;
+
+    private Guid? HighlightId => Highlight ?? Scores.MaxBy(s => s.AchievedUtc)?.RunId;
+
+    protected override void OnInitialized() => _shown = PageSize;
+
+    public static string OutcomeLabel(EndReason reason) => reason switch
+    {
+        EndReason.Killed => "☠ KILLED",
+        EndReason.Retired => "RETIRED",
+        _ => "FINISHED",
+    };
+
+    private static string OutcomeClass(EndReason reason) => reason switch
+    {
+        EndReason.Killed => "crash",
+        EndReason.Retired => "news-status",
+        _ => "spike",
+    };
+
+    public static string Dates(HighScore s)
+    {
+        var end = s.AchievedUtc.ToLocalTime();
+        if (s.StartedUtc is not { } startUtc) return $"Ended {end:d MMM yyyy, HH:mm}";
+        var start = startUtc.ToLocalTime();
+        return start.Date == end.Date
+            ? $"{start:d MMM yyyy}, {start:HH:mm}–{end:HH:mm}"
+            : $"{start:d MMM yyyy, HH:mm} → {end:d MMM yyyy, HH:mm}";
+    }
 }

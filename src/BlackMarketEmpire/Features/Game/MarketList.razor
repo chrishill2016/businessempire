@@ -14,6 +14,10 @@
             <div class="flex-grow-1" style="min-width:0">
                 <div style="font-weight:600;line-height:1.2">
                     @good.Name
+                    @if (good.Size > 1)
+                    {
+                        <span class="event-badge size-badge" title="Takes @good.Size spaces each">×@good.Size space</span>
+                    }
                     @if (shock is not null)
                     {
                         <span class="event-badge @(shock.Kind == MarketEventKind.Spike ? "spike" : "crash")">@NewsFeed.KindLabel(shock.Kind)</span>

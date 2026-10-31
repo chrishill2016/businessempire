@@ -15,10 +15,10 @@ public sealed record GameRules
 
     // ----- Market events (Phase 2) -----
     /// <summary>Chance each new day that a new headline (real event or false rumour) appears.</summary>
-    public double EventChancePerDay { get; init; } = 0.5;
+    public double EventChancePerDay { get; init; } = 0.7;
     /// <summary>Chance a headline is a false rumour rather than a real event.</summary>
     public double FalseRumourChance { get; init; } = 0.25;
-    public int MaxActiveEvents { get; init; } = 3;
+    public int MaxActiveEvents { get; init; } = 5;
     public int MinEventDays { get; init; } = 2;
     public int MaxEventDays { get; init; } = 5;
     public double SpikeMinMultiplier { get; init; } = 2.0;

@@ -62,7 +62,7 @@ public sealed class GameSession(GameEngine engine, ILocalStore store, HighScoreS
             {
                 FinalRank = await highScores.AddAsync(new HighScore(
                     State.RunId, engine.Score(State), DateTime.UtcNow, GameCatalog.City(State.CityId).Name,
-                    State.EndReason, State.StartedUtc));
+                    State.EndReason, State.StartedUtc, State.Day, State.Stats.BestTrade));
             }
             await SaveAsync();
             Changed?.Invoke();

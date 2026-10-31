@@ -1,23 +1,41 @@
 @page "/scores"
 @inject HighScoreService HighScores
+@inject IDialogService Dialogs
 
 <PageTitle>High scores · Black Market Empire</PageTitle>
 
 <div class="page">
-    <div class="d-flex align-center gap-2 mb-3"><NeonIcon Kind="NeonIconKind.Vault" Size="24" /><span class="display" style="font-size:1.3rem">HIGH SCORES</span></div>
+    <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Vault" Size="24" /><span class="display" style="font-size:1.3rem">HIGH SCORES</span></div>
+        <MudButton Href="" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack">Back</MudButton>
+    </div>
     @if (_scores is null)
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
     }
     else
     {
+        <div class="muted mb-2" style="font-size:.85rem">Your best @HighScoreService.MaxEntries runs on this device. The latest run is highlighted.</div>
         <HighScoreTable Scores="_scores" />
+        @if (_scores.Count > 0)
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Secondary" Size="Size.Small" Class="mt-4" StartIcon="@Icons.Material.Filled.DeleteSweep"
+                       OnClick="Clear">Clear all scores</MudButton>
+        }
     }
-    <MudButton Href="" Variant="Variant.Text" Class="mt-4" StartIcon="@Icons.Material.Filled.ArrowBack">Back</MudButton>
 </div>
 
 @code {
     private IReadOnlyList<HighScore>? _scores;
 
     protected override async Task OnInitializedAsync() => _scores = await HighScores.GetTopAsync();
+
+    private async Task Clear()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync("Clear all scores?", "This deletes every score on this device. It can't be undone.",
+            yesText: "Clear", cancelText: "Keep them");
+        if (confirmed != true) return;
+        await HighScores.ClearAsync();
+        _scores = [];
+    }
 }

@@ -32,12 +32,12 @@ public class MarketServiceTests
     }
 
     [Fact]
-    public void Every_city_pair_has_a_travel_time_between_one_and_three_days()
+    public void Every_city_pair_has_a_travel_time_between_one_and_four_days()
     {
         foreach (var a in GameCatalog.Cities)
         foreach (var b in GameCatalog.Cities.Where(c => c.Id != a.Id))
         {
-            Assert.InRange(GameCatalog.DaysBetween(a.Id, b.Id), 1, 3);
+            Assert.InRange(GameCatalog.DaysBetween(a.Id, b.Id), 1, 4);
             Assert.Equal(GameCatalog.DaysBetween(a.Id, b.Id), GameCatalog.DaysBetween(b.Id, a.Id));
         }
     }

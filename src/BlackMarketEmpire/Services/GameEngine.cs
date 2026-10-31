@@ -37,7 +37,7 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
             return 0;
         }
         var affordable = (int)Math.Min(int.MaxValue, state.Cash / price);
-        return Math.Max(0, Math.Min(affordable, state.FreeSpace));
+        return Math.Max(0, Math.Min(affordable, state.FreeSpace / GameCatalog.Good(goodId).Size));
     }
 
     public int Held(GameState state, string goodId) =>
@@ -53,7 +53,8 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         var good = GameCatalog.Good(goodId);
         var cost = (long)price * quantity;
         if (cost > state.Cash) return ActionResult.Fail($"You can't afford {quantity} × {good.Name}.");
-        if (quantity > state.FreeSpace) return ActionResult.Fail($"You only have room for {state.FreeSpace} more.");
+        var room = state.FreeSpace / good.Size;
+        if (quantity > room) return ActionResult.Fail($"You only have room for {room} more{(good.Size > 1 ? $" (each takes {good.Size} spaces)" : "")}.");
 
         AddToInventory(state, goodId, quantity, price);
         state.Cash -= cost;
@@ -80,6 +81,7 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         RemoveFromInventory(state, goodId, quantity);
         if (revenue >= rules.BigDealValue) EncounterService.AddHeat(state, state.CityId, rules.HeatOnBigDeal);
         Touch(state);
+        state.Stats.BestTrade = Math.Max(state.Stats.BestTrade, profit);
         var outcome = profit >= 0 ? $"profit £{profit:N0}" : $"loss £{-profit:N0}";
         var sold = $"Sold {quantity} × {good.Name} for £{revenue:N0} ({outcome}).";
         return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, revenue) ? $"{sold} {state.PendingEncounter!.Intro}" : sold));
@@ -214,8 +216,8 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         var collected = 0;
         foreach (var s in waiting)
         {
-            var take = Math.Min(s.Quantity, state.FreeSpace);
-            if (take == 0) break;
+            var take = Math.Min(s.Quantity, state.FreeSpace / GameCatalog.Good(s.GoodId).Size);
+            if (take == 0) continue;
             AddToInventory(state, s.GoodId, take, s.AverageCost);
             s.Quantity -= take;
             collected += take;
