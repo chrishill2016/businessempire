@@ -11,10 +11,11 @@ When the 30 days are up, your score is **cash minus debt**. Your top 10 scores a
 ## How it plays
 - 6 cities (London, Amsterdam, Marseille, Istanbul, Dubai, Hong Kong) and 8 black-market goods.
 - Prices change every day, and each city is cheaper or dearer for certain goods.
-- Travelling takes 1–3 days. Your £5,000 debt grows 5% every day until you pay it back.
+- Travel by **train, car, plane or boat**. Each has its own fare, journey time and police risk, and airports are the strictest. Your £5,000 debt grows 5% every day until you pay it back.
 - Your suitcase holds 100 items. Anything still unsold when the run ends is worthless.
 - **Market events:** the intel feed reports price spikes and crashes in other cities. They only last a few days, and about a quarter of the rumours are false. You only find out by going there.
 - **Police and customs:** the more you carry, the more likely you are to be stopped. You can run, bribe, fight or surrender. Get arrested and you lose your goods, pay a fine and spend days in jail. Get hurt too badly and you're dead.
+- **Couriers and gear:** send goods ahead with a courier (they might get seized or stolen), and buy gear such as bigger bags, hidden linings, fake documents, a police scanner or body armour. Every city has its own **heat**, which rises when you cause trouble there.
 - Your run saves after every move, so you can close the app and carry on later.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log.
@@ -29,7 +30,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log
 ```
 src/BlackMarketEmpire/
   Features/        Home, Game (market, travel, dialogs, game over), Scores
-  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), GameSession, HighScoreService, IndexedDbStore
+  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), TravelService (routes & fares), ShippingService (couriers), GameSession, HighScoreService, IndexedDbStore
   Models/          GameState, Good, City, GameRules, HighScore
   wwwroot/         index.html, service worker, manifest, icons, js interop
 tests/BlackMarketEmpire.Tests/

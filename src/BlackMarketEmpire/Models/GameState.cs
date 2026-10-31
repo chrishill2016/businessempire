@@ -39,6 +39,18 @@ public sealed class GameState
 
     public RunStats Stats { get; set; } = new();
 
+    /// <summary>How much attention you've drawn in each city (0–100). Cools every day.</summary>
+    public Dictionary<string, int> Heat { get; set; } = [];
+
+    /// <summary>Gear owned, by gear id. Consumables hold a count; everything else is 1.</summary>
+    public Dictionary<string, int> Gear { get; set; } = [];
+
+    /// <summary>Goods sent with couriers, newest first. Delivered goods wait here until collected.</summary>
+    public List<Shipment> Shipments { get; set; } = [];
+
+    /// <summary>How you travelled on your most recent trip (affects running away).</summary>
+    public TravelMethod? LastTravelMethod { get; set; }
+
     public bool IsOver { get; set; }
     public EndReason EndReason { get; set; }
     public DateTime StartedUtc { get; set; } = DateTime.UtcNow;
@@ -50,4 +62,8 @@ public sealed class GameState
     public int FreeSpace => Capacity - UnitsHeld;
     [JsonIgnore]
     public long NetWorth => Cash - Debt;
+
+    public bool Has(string gearId) => Gear.GetValueOrDefault(gearId) > 0;
+
+    public int HeatIn(string cityId) => Heat.GetValueOrDefault(cityId);
 }

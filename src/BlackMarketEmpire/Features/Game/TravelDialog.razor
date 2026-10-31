@@ -3,32 +3,49 @@
         <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Zones" Size="22" /><span class="display">WHERE TO?</span></div>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="Typo.caption">Your debt grows 5% for every day you spend travelling. Price shocks only last a few days, so long trips might arrive too late.</MudText>
-        <MudList T="string" Class="mt-2">
-            @foreach (var city in GameCatalog.Cities.Where(c => c.Id != CurrentCityId))
-            {
-                var days = GameCatalog.DaysBetween(CurrentCityId, city.Id);
-                var tooFar = days > DaysLeft;
-                var intel = News.Where(n => n.CityId == city.Id && n.Status == NewsStatus.Rumour).ToList();
-                <MudListItem T="string" Disabled="tooFar" OnClick="@(() => Dialog.Close(DialogResult.Ok(city.Id)))">
-                    <div class="d-flex justify-space-between">
-                        <span><b>@city.Name</b> <span class="muted">@city.Country</span></span>
-                        <span>@days day@(days == 1 ? "" : "s")@(tooFar ? " · too far" : "")</span>
-                    </div>
-                    @if (intel.Count > 0)
+        <div class="muted" style="font-size:.9rem">
+            Fares are paid up front. Flights are fast but airport customs are the strictest. Boats are slow but quiet.
+            @if (State.UnitsHeld == 0) { <b> You're carrying nothing, so nobody will stop you.</b> }
+        </div>
+        @foreach (var city in GameCatalog.Cities.Where(c => c.Id != State.CityId))
+        {
+            var options = Engine.TravelOptions(State, city.Id);
+            var intel = State.News.Where(n => n.CityId == city.Id && n.Status == NewsStatus.Rumour).ToList();
+            var heat = State.HeatIn(city.Id);
+            <div class="travel-city panel pa-3 mt-3" data-city="@city.Id">
+                <div class="d-flex justify-space-between align-center">
+                    <span><b>@city.Name</b> <span class="muted">@city.Country</span></span>
+                    @if (HasScanner && heat > 0)
                     {
-                        <div class="city-intel" data-intel="@city.Id">
-                            @foreach (var n in intel)
-                            {
-                                <span class="@(n.Kind == MarketEventKind.Spike ? "spike" : "crash")">
-                                    @(n.Kind == MarketEventKind.Spike ? "▲" : "▼") @GameCatalog.Good(n.GoodId).Name <span class="muted">(rumour, day @n.Day)</span>
-                                </span>
-                            }
-                        </div>
+                        <span class="negative" style="font-size:.85rem"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Heat @heat</span>
                     }
-                </MudListItem>
-            }
-        </MudList>
+                </div>
+                @if (intel.Count > 0)
+                {
+                    <div class="city-intel" data-intel="@city.Id">
+                        @foreach (var n in intel)
+                        {
+                            <span class="@(n.Kind == MarketEventKind.Spike ? "spike" : "crash")">
+                                @(n.Kind == MarketEventKind.Spike ? "▲" : "▼") @GameCatalog.Good(n.GoodId).Name <span class="muted">(rumour, day @n.Day)</span>
+                            </span>
+                        }
+                    </div>
+                }
+                <div class="travel-options mt-2">
+                    @foreach (var o in options.Where(o => o.Reason is not ("No road or rail route" or "Needs a port at both ends")))
+                    {
+                        <button type="button" class="travel-option @(o.Available ? null : "disabled")" disabled="@(!o.Available)"
+                                data-method="@o.Method" @onclick="@(() => Dialog.Close(DialogResult.Ok(new TravelChoice(city.Id, o.Method))))">
+                            <span class="to-top">@TravelService.Icon(o.Method) @TravelService.Label(o.Method)</span>
+                            <span class="to-mid">@o.Days day@(o.Days == 1 ? "" : "s") · @Money.Format(o.Fare)</span>
+                            <span class="to-risk @RiskClass(o.StopChance)">
+                                @(o.Available ? (HasScanner ? $"Stop {Math.Round(o.StopChance * 100)}%" : TravelService.RiskLabel(o.StopChance)) : o.Reason)
+                            </span>
+                        </button>
+                    }
+                </div>
+            </div>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="@(() => Dialog.Cancel())">Stay here</MudButton>
@@ -37,7 +54,11 @@
 
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
-    [Parameter] public string CurrentCityId { get; set; } = "";
-    [Parameter] public int DaysLeft { get; set; }
-    [Parameter] public IReadOnlyList<NewsItem> News { get; set; } = [];
+    [Parameter] public GameState State { get; set; } = default!;
+    [Parameter] public GameEngine Engine { get; set; } = default!;
+
+    private bool HasScanner => State.Has("scanner");
+
+    private static string RiskClass(double chance) =>
+        chance >= 0.25 ? "negative" : chance >= 0.10 ? "warnish" : "positive";
 }

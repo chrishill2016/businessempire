@@ -32,40 +32,26 @@ Each phase ships as its own pull request into `main`.
 - [x] Rap sheet and a short reality check on the game-over screen; ☠ marks deaths in high scores
 - [ ] Later: gangs/muggers as well as police, hospital visits to heal faster, lawyers to cut jail time
 
-## Phase 4 — Smuggling logistics
-- [ ] **Travel costs money** — every trip has a ticket/fuel price based on distance and travel method, so moving isn't free
-  - Prices vary by method (bus cheapest, flights dearest) and can spike with events (strikes, fuel crisis)
-  - Can't travel if you can't afford the fare — plan your cash before you sell out
-- [ ] **Travel methods** with different time / cost / risk:
-  - Bus/train — cheap, slow, moderate checks
-  - Car — medium, random roadblocks
-  - Flight — fastest, but **airport security is the strictest**
-  - Boat — slow, low checks, only between port cities
-- [ ] **Shipping / couriers** — pay to send goods to another city instead of carrying them
-  - Costs a fee (% of cargo value), arrives after N days
-  - Lower risk than carrying, but shipments can be seized or a courier can steal them
-  - Reputable couriers cost more but are safer
-- [ ] **Ways to beat the police**
-  - Hidden compartments / concealment upgrades (reduce search chance)
-  - Bribing officials (per-city, gets more expensive with heat)
-  - Fake documents for airports
+## Phase 4 — Smuggling logistics ✅
+- [x] **Travel costs money:** a fare per trip based on distance and method. You can't travel if you can't afford it.
+- [x] **Travel methods** with different time / cost / risk:
+  - Train: cheap, normal checks (overland routes only)
+  - Car: dearer, fewer stops (roadblocks), and +15% to outrun police
+  - Flight: fastest, works everywhere, but **airport customs are the strictest** (×1.6 stop chance)
+  - Boat: slow and cheap, quietest checks, port cities only
+- [x] **Couriers:** pay to send goods ahead instead of carrying them
+  - Budget (10% fee, +1 day, 25% chance it's lost) vs Professional (25% fee, 8% chance it's lost)
+  - Delivered goods wait at the destination until you collect them (space permitting)
+- [x] **Heat** per city: rises with stops, escapes, arrests and big deals; cools 5/day; raises your chance of being stopped
+- [x] **Gear shop:** big holdall (+50), wheeled trunk (+100), hidden-lining case, fake documents, police scanner app, burner phones, running shoes, body armour, first-aid kits
+  - Concealment gear (lining, documents) is seized if you're arrested
+- [ ] Still to come from this phase:
+  - Hire van (+250 space, road trips only)
   - Hiring mules to carry part of the load
   - Contacts/informants who warn about crackdowns
-- [ ] **Heat / wanted level** per city — rises with big trades and encounters, cools over time
-
-### Gear shop
-Spend cash on gear that sticks with you for the rest of the run. Each item is a trade-off between spending now and earning or surviving later.
-- [ ] **Capacity:** bigger holdall (+50), wheeled case (+100), hire van (+250; road travel only)
-- [ ] **Avoiding police:**
-  - Hidden-lining suitcase: lowers the chance you're stopped
-  - Fake documents: big bonus against customs/airport checks
-  - Police scanner app: warns you about a crackdown before you travel
-  - Burner phones: harder to trace, lowers sting chance on big deals
-- [ ] **Escaping:** running shoes (better run odds), a fast car (much better run odds on road trips)
-- [ ] **Survival:** body armour (cuts damage taken), first-aid kit (heal once when hurt)
-- [ ] **Bribing:** a "friend in the force" contact who makes bribes cheaper and more likely to work in one city
-- [ ] Gear can be **lost**: seized on arrest, or stolen in a mugging, so it's a risk, not a guaranteed upgrade
-- [ ] Some gear is only sold in certain cities, and prices vary like goods
+  - Bribing officials ahead of time (price rises with heat); a "friend in the force" per city
+  - Gear stolen in muggings; some gear only sold in certain cities, with varying prices
+  - Fares that spike with events (strikes, fuel crisis)
 
 ## Phase 5 — Economy depth
 - [ ] **Loans:** borrow more money mid-run to fund bigger deals

@@ -6,7 +6,7 @@ namespace BlackMarketEmpire.Services;
 /// All the game rules. Stateless: every method acts on the <see cref="GameState"/> it's given,
 /// which keeps it easy to test and to save/resume.
 /// </summary>
-public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, GameRules rules)
+public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, ShippingService shipping, GameRules rules)
 {
     public const string StartCityId = "london";
 
@@ -55,11 +55,9 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         if (cost > state.Cash) return ActionResult.Fail($"You can't afford {quantity} × {good.Name}.");
         if (quantity > state.FreeSpace) return ActionResult.Fail($"You only have room for {state.FreeSpace} more.");
 
-        var held = Held(state, goodId);
-        var oldAvg = state.AverageCost.GetValueOrDefault(goodId);
-        state.AverageCost[goodId] = (oldAvg * held + cost) / (held + quantity);
-        state.Inventory[goodId] = held + quantity;
+        AddToInventory(state, goodId, quantity, price);
         state.Cash -= cost;
+        if (cost >= rules.BigDealValue) EncounterService.AddHeat(state, state.CityId, rules.HeatOnBigDeal);
         Touch(state);
         var bought = $"Bought {quantity} × {good.Name} for £{cost:N0}.";
         return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, cost) ? $"{bought} {state.PendingEncounter!.Intro}" : bought));
@@ -79,7 +77,164 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         var revenue = (long)price * quantity;
         var profit = revenue - state.AverageCost.GetValueOrDefault(goodId) * quantity;
         state.Cash += revenue;
-        if (held == quantity)
+        RemoveFromInventory(state, goodId, quantity);
+        if (revenue >= rules.BigDealValue) EncounterService.AddHeat(state, state.CityId, rules.HeatOnBigDeal);
+        Touch(state);
+        var outcome = profit >= 0 ? $"profit £{profit:N0}" : $"loss £{-profit:N0}";
+        var sold = $"Sold {quantity} × {good.Name} for £{revenue:N0} ({outcome}).";
+        return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, revenue) ? $"{sold} {state.PendingEncounter!.Intro}" : sold));
+    }
+
+    public IReadOnlyList<TravelOption> TravelOptions(GameState state, string cityId) =>
+        TravelService.Options(state, rules, cityId);
+
+    /// <summary>Travel to a city. With no method given, takes the cheapest one available.</summary>
+    public ActionResult Travel(GameState state, string cityId, TravelMethod? method = null)
+    {
+        if (Guard(state) is { } over) return over;
+        if (cityId == state.CityId) return ActionResult.Fail("You're already here.");
+
+        var options = TravelOptions(state, cityId);
+        var option = method is { } m
+            ? options.First(o => o.Method == m)
+            : options.Where(o => o.Available).OrderBy(o => o.Fare).FirstOrDefault()
+              ?? options.OrderBy(o => o.Days).First();
+        if (!option.Available)
+        {
+            var city = GameCatalog.City(cityId).Name;
+            return ActionResult.Fail(option.Reason switch
+            {
+                "Not enough days left" => $"That trip takes {option.Days} days — you only have {DaysLeft(state)} left.",
+                "Can't afford the fare" => $"The {TravelService.Label(option.Method).ToLowerInvariant()} fare to {city} is {Money.Format(option.Fare)}. You can't afford it.",
+                _ => $"You can't get to {city} by {TravelService.Label(option.Method).ToLowerInvariant()}: {option.Reason?.ToLowerInvariant()}.",
+            });
+        }
+
+        state.Cash -= option.Fare;
+        state.Stats.FaresPaid += option.Fare;
+        state.LastTravelMethod = option.Method;
+        var days = option.Days;
+        AdvanceDays(state, days, inTransit: true);
+        state.CityId = cityId;
+        RefreshMarket(state);
+        Touch(state);
+        var dest = GameCatalog.City(cityId);
+        var message = $"Day {state.Day}. Arrived in {dest.Name} by {TravelService.Label(option.Method).ToLowerInvariant()} after {days} day{(days == 1 ? "" : "s")} ({Money.Format(option.Fare)}).";
+        var intel = events.RevealCity(state, cityId).Select(DescribeReveal).ToList();
+        if (intel.Count > 0) message = $"{message} {string.Join(" ", intel)}";
+        var waiting = DeliveriesHere(state).Sum(s => s.Quantity);
+        if (waiting > 0) message = $"{message} {waiting} items are waiting for you to collect.";
+        if (encounters.MaybeStopOnArrival(state, rules, option.Method)) message = $"{message} {state.PendingEncounter!.Intro}";
+        return Log(state, ActionResult.Ok(message));
+    }
+
+    // ----- Gear -----
+
+    public ActionResult BuyGear(GameState state, string gearId)
+    {
+        if (Guard(state) is { } over) return over;
+        var item = GameCatalog.GearItem(gearId);
+        if (!item.Consumable && state.Has(gearId)) return ActionResult.Fail($"You already have the {item.Name.ToLowerInvariant()}.");
+        if (item.Price > state.Cash) return ActionResult.Fail($"The {item.Name.ToLowerInvariant()} costs {Money.Format(item.Price)}. You can't afford it.");
+
+        state.Cash -= item.Price;
+        state.Gear[gearId] = state.Gear.GetValueOrDefault(gearId) + 1;
+        state.Capacity += gearId switch { "holdall" => 50, "trolley" => 100, _ => 0 };
+        Touch(state);
+        return Log(state, ActionResult.Ok($"Bought {item.Icon} {item.Name} for {Money.Format(item.Price)}."));
+    }
+
+    public ActionResult UseFirstAid(GameState state)
+    {
+        if (Guard(state) is { } over) return over;
+        if (!state.Has("firstaid")) return ActionResult.Fail("You don't have a first-aid kit.");
+        if (state.Health >= rules.MaxHealth) return ActionResult.Fail("You're not hurt.");
+
+        state.Gear["firstaid"]--;
+        if (state.Gear["firstaid"] == 0) state.Gear.Remove("firstaid");
+        var before = state.Health;
+        state.Health = Math.Min(rules.MaxHealth, state.Health + 40);
+        Touch(state);
+        return Log(state, ActionResult.Ok($"Patched yourself up: +{state.Health - before} health."));
+    }
+
+    // ----- Shipping -----
+
+    public ShippingQuote QuoteShipping(GameState state, string goodId, int quantity, string toCityId, string courierId) =>
+        ShippingService.Quote(state, goodId, quantity, toCityId, GameCatalog.Courier(courierId));
+
+    public ActionResult Ship(GameState state, string goodId, int quantity, string toCityId, string courierId)
+    {
+        if (Guard(state) is { } over) return over;
+        if (toCityId == state.CityId) return ActionResult.Fail("Choose a different city to ship to.");
+        var held = Held(state, goodId);
+        var good = GameCatalog.Good(goodId);
+        if (quantity <= 0 || quantity > held) return ActionResult.Fail($"You have {held} × {good.Name}.");
+
+        var courier = GameCatalog.Courier(courierId);
+        var quote = QuoteShipping(state, goodId, quantity, toCityId, courierId);
+        if (quote.ArrivalDay > rules.TotalDays) return ActionResult.Fail("It wouldn't arrive before your 30 days are up.");
+        if (quote.Fee > state.Cash) return ActionResult.Fail($"The courier wants {Money.Format(quote.Fee)}. You can't afford it.");
+
+        state.Cash -= quote.Fee;
+        state.Stats.CourierFeesPaid += quote.Fee;
+        state.Shipments.Insert(0, new Shipment
+        {
+            GoodId = goodId,
+            Quantity = quantity,
+            AverageCost = state.AverageCost.GetValueOrDefault(goodId),
+            FromCityId = state.CityId,
+            ToCityId = toCityId,
+            CourierId = courierId,
+            SentDay = state.Day,
+            ArrivalDay = quote.ArrivalDay,
+        });
+        RemoveFromInventory(state, goodId, quantity);
+        Touch(state);
+        return Log(state, ActionResult.Ok(
+            $"{courier.Name} is taking {quantity} × {good.Name} to {GameCatalog.City(toCityId).Name} for {Money.Format(quote.Fee)}. Due day {quote.ArrivalDay}."));
+    }
+
+    public IEnumerable<Shipment> DeliveriesHere(GameState state) =>
+        state.Shipments.Where(s => s.Status == ShipmentStatus.Delivered && s.ToCityId == state.CityId);
+
+    /// <summary>Picks up delivered goods in the current city, as far as your suitcase has room.</summary>
+    public ActionResult Collect(GameState state)
+    {
+        if (Guard(state) is { } over) return over;
+        var waiting = DeliveriesHere(state).ToList();
+        if (waiting.Count == 0) return ActionResult.Fail("Nothing waiting for you here.");
+        if (state.FreeSpace == 0) return ActionResult.Fail("Your suitcase is full. Sell something first.");
+
+        var collected = 0;
+        foreach (var s in waiting)
+        {
+            var take = Math.Min(s.Quantity, state.FreeSpace);
+            if (take == 0) break;
+            AddToInventory(state, s.GoodId, take, s.AverageCost);
+            s.Quantity -= take;
+            collected += take;
+            if (s.Quantity == 0) state.Shipments.Remove(s);
+        }
+        Touch(state);
+        var left = DeliveriesHere(state).Sum(s => s.Quantity);
+        return Log(state, ActionResult.Ok(left == 0
+            ? $"Collected {collected} items from the drop."
+            : $"Collected {collected} items. {left} more are waiting — make some room."));
+    }
+
+    private static void AddToInventory(GameState state, string goodId, int quantity, long unitCost)
+    {
+        var held = state.Inventory.GetValueOrDefault(goodId);
+        var oldAvg = state.AverageCost.GetValueOrDefault(goodId);
+        state.AverageCost[goodId] = (oldAvg * held + unitCost * quantity) / (held + quantity);
+        state.Inventory[goodId] = held + quantity;
+    }
+
+    private static void RemoveFromInventory(GameState state, string goodId, int quantity)
+    {
+        var held = state.Inventory.GetValueOrDefault(goodId);
+        if (held <= quantity)
         {
             state.Inventory.Remove(goodId);
             state.AverageCost.Remove(goodId);
@@ -88,31 +243,6 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         {
             state.Inventory[goodId] = held - quantity;
         }
-        Touch(state);
-        var outcome = profit >= 0 ? $"profit £{profit:N0}" : $"loss £{-profit:N0}";
-        var sold = $"Sold {quantity} × {good.Name} for £{revenue:N0} ({outcome}).";
-        return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, revenue) ? $"{sold} {state.PendingEncounter!.Intro}" : sold));
-    }
-
-    public ActionResult Travel(GameState state, string cityId)
-    {
-        if (Guard(state) is { } over) return over;
-        if (cityId == state.CityId) return ActionResult.Fail("You're already here.");
-
-        var days = GameCatalog.DaysBetween(state.CityId, cityId);
-        if (state.Day + days > rules.TotalDays)
-            return ActionResult.Fail($"That trip takes {days} days — you only have {DaysLeft(state)} left.");
-
-        AdvanceDays(state, days, inTransit: true);
-        state.CityId = cityId;
-        RefreshMarket(state);
-        Touch(state);
-        var city = GameCatalog.City(cityId);
-        var message = $"Day {state.Day}. Arrived in {city.Name} after {days} day{(days == 1 ? "" : "s")} on the road.";
-        var intel = events.RevealCity(state, cityId).Select(DescribeReveal).ToList();
-        if (intel.Count > 0) message = $"{message} {string.Join(" ", intel)}";
-        if (encounters.MaybeStopOnArrival(state, rules, days)) message = $"{message} {state.PendingEncounter!.Intro}";
-        return Log(state, ActionResult.Ok(message));
     }
 
     /// <summary>Lie low for a day. On the final day this ends the run.</summary>
@@ -226,7 +356,13 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
                 state.Debt = (long)Math.Ceiling(state.Debt * (1 + rules.DailyInterest));
             }
             state.Health = Math.Min(rules.MaxHealth, state.Health + rules.HealthPerDay);
+            foreach (var city in state.Heat.Keys.ToList())
+            {
+                EncounterService.AddHeat(state, city, -rules.HeatCoolPerDay);
+                if (state.Heat[city] == 0) state.Heat.Remove(city);
+            }
             events.OnNewDay(state, rules, inTransit);
+            foreach (var message in shipping.OnNewDay(state)) AddLog(state, message);
         }
     }
 

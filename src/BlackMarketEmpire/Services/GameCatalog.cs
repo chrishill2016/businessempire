@@ -45,12 +45,64 @@ public static class GameCatalog
         ("dubai", "hongkong", 2),
     ]);
 
+    /// <summary>Cities with a cargo port.</summary>
+    public static IReadOnlySet<string> Ports { get; } = new HashSet<string> { "amsterdam", "marseille", "istanbul", "dubai", "hongkong" };
+
+    /// <summary>Routes you can do by train or car. Everything else needs a flight or a boat.</summary>
+    private static readonly HashSet<(string, string)> OverlandRoutes = BuildPairs(
+    [
+        ("london", "amsterdam"), ("london", "marseille"), ("london", "istanbul"),
+        ("amsterdam", "marseille"), ("amsterdam", "istanbul"),
+        ("marseille", "istanbul"),
+        ("istanbul", "dubai"),
+    ]);
+
+    public static IReadOnlyList<GearItem> Gear { get; } =
+    [
+        new("holdall", "Big holdall", "🎒", 1_500, "+50 suitcase space."),
+        new("trolley", "Wheeled trunk", "🧳", 4_000, "+100 suitcase space."),
+        new("lining", "Hidden-lining case", "🕳️", 2_500, "Stopped 30% less often. Seized if you're arrested.", SeizedOnArrest: true),
+        new("docs", "Fake documents", "🪪", 3_000, "Halves the chance of being stopped when flying or by boat. Seized if you're arrested.", SeizedOnArrest: true),
+        new("scanner", "Police scanner app", "📡", 800, "Shows the exact chance of being stopped on every route, and the heat in every city."),
+        new("burners", "Burner phones", "📵", 600, "Big deals are far less likely to be stings."),
+        new("shoes", "Running shoes", "👟", 300, "+10% chance when you run."),
+        new("armour", "Body armour", "🦺", 2_000, "Take 40% less damage."),
+        new("firstaid", "First-aid kit", "🩹", 400, "Use any time to heal 40 health.", Consumable: true),
+    ];
+
+    public static IReadOnlyList<Courier> Couriers { get; } =
+    [
+        new("budget", "Budget courier", FeeRate: 0.10, ExtraDays: 1, SeizureChance: 0.20, TheftChance: 0.05,
+            "Cheap and slow. Customs catch a lot of their parcels."),
+        new("pro", "Professional smuggler", FeeRate: 0.25, ExtraDays: 0, SeizureChance: 0.07, TheftChance: 0.01,
+            "Expensive, but fast and careful."),
+    ];
+
     public static Good Good(string id) => Goods.First(g => g.Id == id);
+
+    public static GearItem GearItem(string id) => Gear.First(g => g.Id == id);
+
+    public static Courier Courier(string id) => Couriers.First(c => c.Id == id);
+
+    public static bool HasOverlandRoute(string a, string b) => OverlandRoutes.Contains((a, b));
+
+    public static bool IsPort(string cityId) => Ports.Contains(cityId);
 
     public static City City(string id) => Cities.First(c => c.Id == id);
 
     public static int DaysBetween(string fromCityId, string toCityId) =>
         fromCityId == toCityId ? 0 : TravelDays[(fromCityId, toCityId)];
+
+    private static HashSet<(string, string)> BuildPairs(IEnumerable<(string A, string B)> pairs)
+    {
+        var set = new HashSet<(string, string)>();
+        foreach (var (a, b) in pairs)
+        {
+            set.Add((a, b));
+            set.Add((b, a));
+        }
+        return set;
+    }
 
     private static Dictionary<(string, string), int> BuildTravelDays(IEnumerable<(string A, string B, int Days)> routes)
     {
