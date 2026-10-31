@@ -68,7 +68,13 @@ Spend cash on gear that sticks with you for the rest of the run. Each item is a 
 - [ ] Some gear is only sold in certain cities, and prices vary like goods
 
 ## Phase 5 — Economy depth
-- [ ] Bank (safe deposit) and loan shark with interest
+- [ ] **Loans:** borrow more money mid-run to fund bigger deals
+  - **Loan shark:** available anywhere, lends fast, charges high daily interest (like your starting debt). There's a borrowing limit that grows as you repay on time.
+  - **Bank loan:** cheaper interest, but only in some cities and only if your net worth is good enough. It's refused if your rap sheet has arrests.
+  - **Underground lender** in certain cities: big sums, but miss the repayment date and their enforcers come after you (health damage, goods taken)
+  - Repayment deadlines: if a loan is overdue, interest rises, and loan-shark "visits" can happen when you arrive in a city
+  - Any unpaid loans are taken off your final score, like the starting debt
+- [ ] **Bank (safe deposit):** keep cash safe from fines, muggings and death. Small interest, and only usable in cities with a branch.
 - [ ] Stash houses in cities (store goods; can be raided)
 - [ ] Warehouse / storage space (see the Phase 4 gear shop for carried-capacity upgrades)
 - [ ] City risk profiles (some cities lucrative but dangerous)
