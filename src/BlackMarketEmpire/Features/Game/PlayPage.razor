@@ -14,9 +14,10 @@
 
         @if (lastDay)
         {
-            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
-                Last day! Sell everything and pay your debt — unsold goods are worthless when the run ends.
-            </MudAlert>
+            <div class="panel pa-3 mt-2 d-flex align-center gap-2" style="border-color:var(--bme-magenta)">
+                <NeonIcon Kind="NeonIconKind.Heat" Size="20" />
+                <span>Last day! Sell everything and pay your debt. Unsold goods are worthless when the run ends.</span>
+            </div>
         }
 
         <div class="mt-3">
@@ -24,25 +25,25 @@
         </div>
 
         <MudStack Row="true" Spacing="2" Class="mt-3" Wrap="Wrap.Wrap">
-            <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Flight"
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Flight"
                        Disabled="@(_busy || lastDay)" OnClick="OpenTravel" Class="flex-grow-1">Travel</MudButton>
-            <MudButton Variant="Variant.Outlined" StartIcon="@(lastDay ? Icons.Material.Filled.Flag : Icons.Material.Filled.Bedtime)"
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@(lastDay ? Icons.Material.Filled.Flag : Icons.Material.Filled.Bedtime)"
                        Disabled="_busy" OnClick="WaitOrEnd" Class="flex-grow-1">@(lastDay ? "End run" : "Wait a day")</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Payments"
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Payments"
                        Disabled="@(_busy || state.Debt == 0 || state.Cash == 0)" OnClick="OpenRepay" Class="flex-grow-1">Repay debt</MudButton>
         </MudStack>
 
-        <MudPaper Class="pa-3 mt-3" Elevation="0" Outlined="true">
-            <MudText Typo="Typo.subtitle2" Class="mb-1">Recent</MudText>
-            @foreach (var line in state.Log.Take(6))
+        <div class="panel pa-4 mt-3">
+            <div class="eyebrow mb-2">Activity log</div>
+            @foreach (var (line, i) in state.Log.Take(6).Select((l, i) => (l, i)))
             {
-                <MudText Typo="Typo.caption" Class="d-block">@line</MudText>
+                <div class="log-line @(i == 0 ? "latest" : null)"><span class="log-caret">&gt;</span> @line</div>
             }
-        </MudPaper>
+        </div>
 
         @if (!lastDay)
         {
-            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default" Class="mt-2" OnClick="ConfirmEndEarly">
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default" Class="mt-2 muted" OnClick="ConfirmEndEarly">
                 Retire early (end run now)
             </MudButton>
         }

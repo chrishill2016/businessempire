@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Black Market Empire">
+  <path d="M64 10 110 37v54l-46 27-46-27V37z" stroke="#39FF88" stroke-width="4"/>
+  <path d="M78 46c-3-5-8-7-14-7-9 0-15 5-15 11 0 15 30 9 30 25 0 7-7 12-15 12-7 0-13-3-16-8" stroke="#39FF88" stroke-width="7" stroke-linecap="square"/>
+  <path d="M64 30v10M64 87v11" stroke="#39FF88" stroke-width="7" stroke-linecap="square"/>
+  <path d="M30 60h16M86 72h12" stroke="#FF3D9A" stroke-width="3"/>
+</svg>

@@ -10,9 +10,12 @@
 
 <MudLayout>
     <MudAppBar Elevation="1" Dense="true">
-        <MudLink Href="" Underline="Underline.None" Color="Color.Primary" Typo="Typo.h6">
-            💼 Black Market Empire
-        </MudLink>
+        <a href="" class="d-flex align-center gap-2" style="text-decoration:none" aria-label="Home">
+            <span class="app-icon-tile glow" style="width:32px;height:32px;border-radius:8px">
+                <img src="icon.svg" alt="" width="24" height="24" />
+            </span>
+            <Wordmark />
+        </a>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Inherit" Href="scores" aria-label="High scores" />
     </MudAppBar>

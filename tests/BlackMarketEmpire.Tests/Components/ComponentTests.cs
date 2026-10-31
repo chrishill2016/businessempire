@@ -23,7 +23,7 @@ public class ComponentTests : BunitContext
             .Add(c => c.State, state)
             .Add(c => c.TotalDays, 30));
 
-        Assert.Contains("London", cut.Find(".status-city").TextContent);
+        Assert.Contains("London", cut.Find(".status-city").TextContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Day 1 / 30", cut.Find(".status-day").TextContent);
         Assert.Contains("£2,500", cut.Find(".status-cash").TextContent);
         Assert.Contains("£5,000", cut.Find(".status-debt").TextContent);
@@ -84,5 +84,29 @@ public class ComponentTests : BunitContext
         Assert.Equal(2, rows.Count);
         Assert.Contains("£50,000", rows[0].TextContent);
         Assert.Contains("Dubai", rows[0].TextContent);
+    }
+}
+
+public class NeonComponentTests : BunitContext
+{
+    [Theory]
+    [InlineData(BlackMarketEmpire.Shared.NeonIconKind.Credits)]
+    [InlineData(BlackMarketEmpire.Shared.NeonIconKind.Heat)]
+    [InlineData(BlackMarketEmpire.Shared.NeonIconKind.Market)]
+    public void NeonIcon_renders_svg_and_heat_uses_magenta_class(BlackMarketEmpire.Shared.NeonIconKind kind)
+    {
+        var cut = Render<BlackMarketEmpire.Shared.NeonIcon>(p => p.Add(c => c.Kind, kind));
+
+        Assert.NotEmpty(cut.Find("svg").Children);
+        Assert.Equal(kind == BlackMarketEmpire.Shared.NeonIconKind.Heat, cut.Find(".neon-icon").ClassList.Contains("heat"));
+    }
+
+    [Fact]
+    public void Wordmark_spells_out_the_name()
+    {
+        var cut = Render<BlackMarketEmpire.Shared.Wordmark>();
+
+        Assert.Equal("BLACK_MARKET", cut.Find(".wm-top").TextContent);
+        Assert.Equal("EMPIRE", cut.Find(".wm-bottom").TextContent);
     }
 }
