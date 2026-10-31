@@ -250,3 +250,12 @@ html, body {
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .action-grid .mud-button-root { height: 44px; }
 .action-grid .wide { grid-column: span 2; }
+
+/* Finance */
+.loan-row { border-bottom: 1px solid var(--bme-line); }
+.loan-row:last-child { border-bottom: none; }
+.stars { color: #FACC15; letter-spacing: 0.05em; white-space: nowrap; }
+.stars .muted { color: var(--bme-line-strong); }
+.danger-high { color: var(--bme-magenta); }
+.danger-medium { color: #FACC15; }
+.danger-low { color: var(--bme-acid); }

@@ -76,5 +76,23 @@ public sealed record GameRules
     /// <summary>Extra stop chance at 100 heat (scales linearly).</summary>
     public double StopChanceAtMaxHeat { get; init; } = 0.25;
 
+    // ----- Economy (Phase 5) -----
+    /// <summary>Extra daily interest on an overdue loan.</summary>
+    public double OverduePenaltyRate { get; init; } = 0.02;
+    /// <summary>Chance a lender's enforcers find you on a day you're in one of their cities while overdue.</summary>
+    public double EnforcerVisitChance { get; init; } = 0.6;
+    /// <summary>Daily interest on bank savings.</summary>
+    public double BankInterest { get; init; } = 0.005;
+    /// <summary>Net worth the bank wants to see before lending.</summary>
+    public long BankLoanMinNetWorth { get; init; } = 10_000;
+    public long LockupPrice { get; init; } = 1_000;
+    public int LockupCapacity { get; init; } = 150;
+    public double LockupRaidChance { get; init; } = 0.03;
+    public long WarehousePrice { get; init; } = 6_000;
+    public int WarehouseCapacity { get; init; } = 500;
+    public double WarehouseRaidChance { get; init; } = 0.01;
+    /// <summary>Extra daily raid chance at 100 heat.</summary>
+    public double RaidChanceAtMaxHeat { get; init; } = 0.08;
+
     public static GameRules Default { get; } = new();
 }

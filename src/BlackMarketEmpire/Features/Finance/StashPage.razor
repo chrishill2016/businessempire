@@ -1,0 +1,125 @@
+@page "/stash"
+@inject GameSession Session
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Stash · Black Market Empire</PageTitle>
+
+<div class="page">
+    @if (Session.State is { } s)
+    {
+        var rules = Session.Engine.Rules;
+        var stash = s.StashIn(s.CityId);
+        var city = GameCatalog.City(s.CityId).Name;
+        <div class="d-flex align-center justify-space-between mb-3">
+            <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Vault" Size="24" /><span class="display" style="font-size:1.2rem">STASH · @city.ToUpperInvariant()</span></div>
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => Nav.NavigateTo("play"))">Back</MudButton>
+        </div>
+
+        @if (stash is null || stash.Tier < StashTier.Warehouse)
+        {
+            <div class="panel pa-4 mb-3">
+                <div class="muted mb-3" style="font-size:.9rem">
+                    Rent somewhere to hide goods in @city for the rest of the run. Goods in a stash can't be found when you're stopped,
+                    but the police can raid it — more likely when the city's hot.
+                </div>
+                @foreach (var tier in new[] { StashTier.Lockup, StashTier.Warehouse }.Where(t => stash is null || t > stash.Tier))
+                {
+                    var raid = FinanceService.RaidChance(s, rules, new Stash { CityId = s.CityId, Tier = tier });
+                    <div class="d-flex align-center gap-2 py-2 stash-offer" data-tier="@tier">
+                        <div class="flex-grow-1">
+                            <div style="font-weight:700">@(tier == StashTier.Lockup ? "Lock-up garage" : "Warehouse")</div>
+                            <div class="muted" style="font-size:.85rem">@FinanceService.Capacity(rules, tier) items · @Math.Round(raid * 100, 1)% raid chance a day</div>
+                        </div>
+                        <span class="money">@Money.Format(FinanceService.Price(rules, tier))</span>
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary"
+                                   Disabled="@(_busy || s.Cash < FinanceService.Price(rules, tier))" OnClick="@(() => Run(() => Session.RentStashAsync(tier)))">
+                            @(stash is null ? "Rent" : "Upgrade")
+                        </MudButton>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (stash is not null)
+        {
+            var cap = FinanceService.Capacity(rules, stash.Tier);
+            <div class="panel pa-4 mb-3">
+                <div class="d-flex justify-space-between">
+                    <span class="eyebrow">@(stash.Tier == StashTier.Warehouse ? "Warehouse" : "Lock-up")</span>
+                    <span class="money stash-usage">@stash.Units / @cap</span>
+                </div>
+                <div class="meter my-2"><div style="width:@(stash.Units * 100 / cap)%"></div></div>
+                <div class="muted" style="font-size:.85rem">Raid chance today: @Math.Round(FinanceService.RaidChance(s, rules, stash) * 100, 1)%</div>
+            </div>
+
+            <div class="eyebrow mb-2">In your suitcase (@s.UnitsHeld / @s.Capacity)</div>
+            <div class="panel mb-3">
+                @if (s.Inventory.Count == 0) { <div class="pa-3 muted">Empty.</div> }
+                @foreach (var (id, qty) in s.Inventory.ToList())
+                {
+                    var g = GameCatalog.Good(id);
+                    <div class="d-flex align-center gap-2 px-3 py-2 market-row" data-carry="@id">
+                        <span class="good-icon">@g.Icon</span>
+                        <span class="flex-grow-1">@g.Name × @qty</span>
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(_busy || stash.Units >= cap)"
+                                   OnClick="@(() => Run(() => Session.StoreAsync(id, qty)))">Stash all</MudButton>
+                    </div>
+                }
+            </div>
+
+            <div class="eyebrow mb-2">In the stash</div>
+            <div class="panel mb-3">
+                @if (stash.Goods.Count == 0) { <div class="pa-3 muted">Empty.</div> }
+                @foreach (var (id, qty) in stash.Goods.ToList())
+                {
+                    var g = GameCatalog.Good(id);
+                    <div class="d-flex align-center gap-2 px-3 py-2 market-row" data-stashed="@id">
+                        <span class="good-icon">@g.Icon</span>
+                        <span class="flex-grow-1">@g.Name × @qty</span>
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.FreeSpace == 0)"
+                                   OnClick="@(() => Run(() => Session.TakeFromStashAsync(id, qty)))">Take</MudButton>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (s.Stashes.Any(x => x.CityId != s.CityId))
+        {
+            <div class="eyebrow mb-2">Your other stashes</div>
+            <div class="panel pa-3">
+                @foreach (var other in s.Stashes.Where(x => x.CityId != s.CityId))
+                {
+                    <div class="d-flex justify-space-between py-1">
+                        <span>@GameCatalog.City(other.CityId).Name</span>
+                        <span class="muted">@other.Units items</span>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.LoadAsync();
+        if (Session.State is { IsOver: true }) Nav.NavigateTo("game-over");
+    }
+
+    private async Task Run(Func<Task<ActionResult>> action)
+    {
+        _busy = true;
+        try
+        {
+            var result = await action();
+            Snackbar.Add(result.Message, result.Success ? Severity.Normal : Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

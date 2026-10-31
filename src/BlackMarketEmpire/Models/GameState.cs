@@ -48,6 +48,17 @@ public sealed class GameState
     /// <summary>Goods sent with couriers, newest first. Delivered goods wait here until collected.</summary>
     public List<Shipment> Shipments { get; set; } = [];
 
+    /// <summary>Loans taken during the run (the starting debt is <see cref="Debt"/>).</summary>
+    public List<Loan> Loans { get; set; } = [];
+
+    /// <summary>Your standing with each lender, 0–10 (5 = average). Missing = 5.</summary>
+    public Dictionary<string, int> Reputation { get; set; } = [];
+
+    /// <summary>Cash in the bank: safe from fines and from dying.</summary>
+    public long Bank { get; set; }
+
+    public List<Stash> Stashes { get; set; } = [];
+
     /// <summary>How you travelled on your most recent trip (affects running away).</summary>
     public TravelMethod? LastTravelMethod { get; set; }
 
@@ -60,8 +71,16 @@ public sealed class GameState
     public int UnitsHeld => Inventory.Values.Sum();
     [JsonIgnore]
     public int FreeSpace => Capacity - UnitsHeld;
+    /// <summary>Starting debt plus every loan still owed.</summary>
     [JsonIgnore]
-    public long NetWorth => Cash - Debt;
+    public long TotalDebt => Debt + Loans.Where(l => l.Status == LoanStatus.Active).Sum(l => l.Owed);
+
+    [JsonIgnore]
+    public long NetWorth => Cash + Bank - TotalDebt;
+
+    public int ReputationWith(string lenderId) => Reputation.GetValueOrDefault(lenderId, 5);
+
+    public Stash? StashIn(string cityId) => Stashes.FirstOrDefault(s => s.CityId == cityId);
 
     public bool Has(string gearId) => Gear.GetValueOrDefault(gearId) > 0;
 

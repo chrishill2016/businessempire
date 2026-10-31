@@ -17,7 +17,7 @@
         {
             <div class="panel pa-3 mt-2 d-flex align-center gap-2" style="border-color:var(--bme-magenta)">
                 <NeonIcon Kind="NeonIconKind.Heat" Size="20" />
-                <span>Last day! Sell everything and pay your debt. Unsold goods are worthless when the run ends.</span>
+                <span>Last day! Sell everything and pay your debts. Unsold goods, including anything in a stash, are worthless when the run ends.</span>
             </div>
         }
 
@@ -42,8 +42,10 @@
                        Disabled="_busy" OnClick="OpenGear">Gear</MudButton>
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.LocalShipping"
                        Disabled="@(_busy || state.Inventory.Count == 0 || lastDay)" OnClick="OpenShip">Ship</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Payments" Class="wide"
-                       Disabled="@(_busy || state.Debt == 0 || state.Cash == 0)" OnClick="OpenRepay">Repay debt</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Payments"
+                       Disabled="_busy" OnClick="@(() => Nav.NavigateTo("finance"))">Money</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Warehouse"
+                       Disabled="_busy" OnClick="@(() => Nav.NavigateTo("stash"))">Stash</MudButton>
         </div>
 
         @if (state.Shipments.Count > 0)
@@ -189,22 +191,6 @@
         if (result is { Canceled: false, Data: ShipOrder order })
         {
             await Run(() => Session.ShipAsync(order.GoodId, order.Quantity, order.ToCityId, order.CourierId));
-        }
-    }
-
-    private async Task OpenRepay()
-    {
-        var state = Session.State!;
-        var parameters = new DialogParameters<RepayDialog>
-        {
-            { d => d.Debt, state.Debt },
-            { d => d.Cash, state.Cash },
-        };
-        var dialog = await Dialogs.ShowAsync<RepayDialog>(null, parameters);
-        var result = await dialog.Result;
-        if (result is { Canceled: false, Data: long amount })
-        {
-            await Run(() => Session.RepayAsync(amount));
         }
     }
 

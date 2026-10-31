@@ -237,3 +237,28 @@ public class LogisticsComponentTests : BunitContext
         Assert.Equal("60", cut.Find(".status-heat").TextContent);
     }
 }
+
+public class FinanceComponentTests : BunitContext
+{
+    public FinanceComponentTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+    }
+
+    [Fact]
+    public void StatusPanel_shows_total_owed_bank_and_overdue()
+    {
+        var state = TestGame.Engine().NewGame();
+        state.Bank = 1_200;
+        state.Day = 10;
+        state.Loans.Add(new Loan { LenderId = "eddie", Owed = 2_000, DueDay = 3 });
+
+        var cut = Render<StatusPanel>(p => p.Add(c => c.State, state).Add(c => c.TotalDays, 30));
+
+        Assert.Contains("£7,000", cut.Find(".status-debt").TextContent);
+        Assert.Contains("£1,200", cut.Find(".status-bank").TextContent);
+        Assert.NotNull(cut.Find(".status-overdue"));
+        Assert.Contains("Medium danger", cut.Markup);
+    }
+}

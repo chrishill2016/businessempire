@@ -14,6 +14,9 @@
         <span>Fares paid</span><span class="v">@Money.Format(Stats.FaresPaid)</span>
         <span>Courier fees</span><span class="v">@Money.Format(Stats.CourierFeesPaid)</span>
         <span>Shipments lost</span><span class="v @(Stats.ShipmentsLost > 0 ? "negative" : null)">@Stats.ShipmentsLost</span>
+        <span>Money borrowed</span><span class="v">@Money.Format(Stats.Borrowed)</span>
+        <span>Enforcer visits</span><span class="v @(Stats.EnforcerVisits > 0 ? "negative" : null)">@Stats.EnforcerVisits</span>
+        <span>Stash raids</span><span class="v @(Stats.StashRaids > 0 ? "negative" : null)">@Stats.StashRaids</span>
         <span>Damage taken</span><span class="v @(Stats.DamageTaken > 0 ? "negative" : null)">@Stats.DamageTaken</span>
     </div>
     <div class="mt-4 reality-check" style="color:var(--bme-text-2);line-height:1.4">@RealityCheck(Reason, Stats)</div>

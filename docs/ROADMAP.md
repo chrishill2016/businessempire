@@ -53,26 +53,20 @@ Each phase ships as its own pull request into `main`.
   - Gear stolen in muggings; some gear only sold in certain cities, with varying prices
   - Fares that spike with events (strikes, fuel crisis)
 
-## Phase 5 — Economy depth
-- [ ] **Loans:** borrow more money mid-run to fund bigger deals
-  - **Several loan sharks**, each with their own terms and personality, for example:
-    - *"Fast Eddie"* (London): small loans, 8%/day, forgiving if you're a day late
-    - *"The Accountant"* (Amsterdam): bigger loans, 4%/day, strict deadlines, no extensions
-    - *"Mama Rossi"* (Marseille): mid-size, 6%/day, sends enforcers the day you're overdue
-    - Each lender only operates in certain cities, so you have to be there to borrow or repay
-  - **Reputation decides your rates.** Each lender tracks how you've treated them:
-    - Repay on time or early → lower interest, higher borrowing limits, longer deadlines
-    - Pay late or skip repayments → higher rates, smaller limits, and eventually they won't lend to you at all
-    - A big arrest record or a lot of heat makes every lender nervous (worse rates across the board)
-    - Reputation shown as a simple rating per lender (e.g. ★–★★★★★) with the rate they'd offer you now
-  - **Bank loan:** cheaper interest, but only in some cities and only if your net worth is good enough. It's refused if your rap sheet has arrests.
-  - **Underground lender** in certain cities: big sums, but miss the repayment date and their enforcers come after you (health damage, goods taken)
-  - Repayment deadlines: if a loan is overdue, interest rises, and loan-shark "visits" can happen when you arrive in a city
-  - Any unpaid loans are taken off your final score, like the starting debt
-- [ ] **Bank (safe deposit):** keep cash safe from fines, muggings and death. Small interest, and only usable in cities with a branch.
-- [ ] Stash houses in cities (store goods; can be raided)
-- [ ] Warehouse / storage space (see the Phase 4 gear shop for carried-capacity upgrades)
-- [ ] City risk profiles (some cities lucrative but dangerous)
+## Phase 5 — Economy depth ✅
+- [x] **Several lenders**, each with their own cities, rates, limits, deadlines and enforcers:
+  - Fast Eddie (London, Istanbul): 8%/day, small loans, 7 days, 1 day's grace
+  - The Accountant (Amsterdam, Dubai): 4%/day, bigger loans, 5 days, no grace, takes goods
+  - Mama Rossi (Marseille, Hong Kong): 6%/day, 6 days, rough enforcers
+  - First Meridian Bank (London, Amsterdam, Dubai, Hong Kong): 1%/day, up to half your net worth; needs £10k net worth and no arrests
+  - The Syndicate (Istanbul, Hong Kong): 10%/day, up to £50k, brutal enforcers who take goods
+- [x] **Reputation per lender** (★–★★★★★): repay on time (+1, or +2 if early) for lower rates and bigger limits; overdue loans cost 3 reputation points; at 1★ or below they won't lend. Arrests and heat raise every rate.
+- [x] **Deadlines:** overdue loans add +2%/day, and enforcers may find you (60%/day) in that lender's cities: they take cash, maybe goods, and hurt you, and they can kill you
+- [x] **Bank account:** deposit and withdraw at branches; 0.5%/day interest; safe from fines, enforcers and death
+- [x] **Stash houses:** lock-up (£1,000, 150 items, 3%/day raid chance) or warehouse (£6,000, 500 items, 1%); raid risk rises with heat
+- [x] **City risk profiles:** Low (Amsterdam, Hong Kong), Medium (London, Istanbul) and High (Marseille, Dubai) danger change how often police stop you
+- [x] Score = cash + bank − everything owed; if you're killed, the bank still counts and the debts still count
+- [ ] Later: loan extensions for good customers, lenders who sell your debt on, insurance on stashes, the bank freezing your account if your heat gets too high
 
 ## Phase 6 — Bigger world & score history
 - [ ] **More cities** — e.g. New York, Miami, Bogotá, Lagos, Bangkok, Sydney, Moscow, Naples

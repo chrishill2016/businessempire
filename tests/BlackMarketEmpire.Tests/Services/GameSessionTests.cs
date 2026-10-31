@@ -81,6 +81,24 @@ public class GameSessionTests
     }
 
     [Fact]
+    public async Task Loans_bank_and_stash_survive_an_app_restart()
+    {
+        var first = NewSession();
+        await first.StartNewAsync();
+        await first.BorrowAsync("eddie", 1_000);
+        await first.DepositAsync(500);
+        await first.RentStashAsync(StashTier.Lockup);
+
+        var second = NewSession();
+        await second.LoadAsync();
+
+        Assert.Equal(1_000, Assert.Single(second.State!.Loans).Owed);
+        Assert.Equal(500, second.State.Bank);
+        Assert.Equal(StashTier.Lockup, second.State.StashIn("london")?.Tier);
+        Assert.Equal(first.State!.TotalDebt, second.State.TotalDebt);
+    }
+
+    [Fact]
     public async Task Changed_fires_only_on_successful_actions()
     {
         var session = NewSession();

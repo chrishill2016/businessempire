@@ -209,7 +209,7 @@ public class GearTests
     {
         var random = new SystemRandomSource(new Random(1));
         var engine = new GameEngine(new MarketService(random), new EventService(random),
-            new EncounterService(new ScriptedRandom(0)), new ShippingService(random), TestGame.AllAvailable);
+            new EncounterService(new ScriptedRandom(0)), new ShippingService(random), new FinanceService(random), TestGame.AllAvailable);
         var state = engine.NewGame();
         state.Gear["lining"] = 1;
         state.Gear["docs"] = 1;
@@ -269,7 +269,7 @@ public class HeatTests
     {
         var random = new SystemRandomSource(new Random(1));
         var engine = new GameEngine(new MarketService(random), new EventService(random),
-            new EncounterService(new ScriptedRandom(0)), new ShippingService(random), TestGame.AllAvailable);
+            new EncounterService(new ScriptedRandom(0)), new ShippingService(random), new FinanceService(random), TestGame.AllAvailable);
         var state = engine.NewGame();
         state.PendingEncounter = new Encounter { Kind = EncounterKind.Police, BribeCost = 300 };
 
@@ -285,7 +285,7 @@ public class ShippingTests
     {
         var random = new SystemRandomSource(new Random(1));
         return new GameEngine(new MarketService(random), new EventService(random), new EncounterService(random),
-            new ShippingService(new ScriptedRandom(shippingRolls)), TestGame.AllAvailable);
+            new ShippingService(new ScriptedRandom(shippingRolls)), new FinanceService(random), TestGame.AllAvailable);
     }
 
     private static GameState WithCigs(GameEngine engine, int qty = 20)

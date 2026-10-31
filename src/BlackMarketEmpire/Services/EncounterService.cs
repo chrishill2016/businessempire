@@ -24,6 +24,7 @@ public sealed class EncounterService(IRandomSource random)
                      + CargoValue(state) / 10_000.0 * rules.StopChancePer10k
                      + state.HeatIn(cityId) / 100.0 * rules.StopChanceAtMaxHeat;
         chance *= TravelService.StopFactor(method, rules);
+        chance *= GameCatalog.Cities.FirstOrDefault(c => c.Id == cityId)?.PoliceFactor ?? 1.0;
         if (state.Has("lining")) chance *= 0.7;
         if (state.Has("docs") && TravelService.IsCustoms(method)) chance *= 0.5;
         return Math.Min(chance, rules.MaxStopChance);

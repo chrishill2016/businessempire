@@ -18,7 +18,7 @@ public static class TestGame
     public static GameEngine Engine(int seed = 42, GameRules? rules = null)
     {
         var random = new SystemRandomSource(new Random(seed));
-        return new(new MarketService(random), new EventService(random), new EncounterService(random), new ShippingService(random), rules ?? AllAvailable);
+        return new(new MarketService(random), new EventService(random), new EncounterService(random), new ShippingService(random), new FinanceService(random), rules ?? AllAvailable);
     }
 
     /// <summary>A state with a fixed, known market in London.</summary>

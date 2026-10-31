@@ -2,7 +2,7 @@
 
 A mobile-first trading game you can install on your phone, and it works offline. You're a smuggler with **30 days** to turn a small stake and a loan shark's debt into the biggest fortune you can. Buy cheap in one city, carry it to another, and sell high.
 
-When the 30 days are up, your score is **cash minus debt**. Your top 10 scores are kept on your device.
+When the 30 days are up, your score is **cash plus savings, minus everything you owe**. Your top 10 scores are kept on your device.
 
 > It's a game. In real life, smuggling ends in prison or worse.
 
@@ -16,6 +16,7 @@ When the 30 days are up, your score is **cash minus debt**. Your top 10 scores a
 - **Market events:** the intel feed reports price spikes and crashes in other cities. They only last a few days, and about a quarter of the rumours are false. You only find out by going there.
 - **Police and customs:** the more you carry, the more likely you are to be stopped. You can run, bribe, fight or surrender. Get arrested and you lose your goods, pay a fine and spend days in jail. Get hurt too badly and you're dead.
 - **Couriers and gear:** send goods ahead with a courier (they might get seized or stolen), and buy gear such as bigger bags, hidden linings, fake documents, a police scanner or body armour. Every city has its own **heat**, which rises when you cause trouble there.
+- **Money:** borrow from three loan sharks, a bank or the Syndicate. Each has its own rates and deadlines, and repaying on time improves your reputation and gets you better rates. Miss a deadline and enforcers come for you. Bank your cash to keep it safe, and rent a lock-up or warehouse to stash goods (they can be raided). Some cities are more dangerous than others.
 - Your run saves after every move, so you can close the app and carry on later.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log.
@@ -30,7 +31,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log
 ```
 src/BlackMarketEmpire/
   Features/        Home, Game (market, travel, dialogs, game over), Scores
-  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), TravelService (routes & fares), ShippingService (couriers), GameSession, HighScoreService, IndexedDbStore
+  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), TravelService (routes & fares), ShippingService (couriers), FinanceService (loans, bank, stashes), GameSession, HighScoreService, IndexedDbStore
   Models/          GameState, Good, City, GameRules, HighScore
   wwwroot/         index.html, service worker, manifest, icons, js interop
 tests/BlackMarketEmpire.Tests/

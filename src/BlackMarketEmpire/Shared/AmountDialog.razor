@@ -1,0 +1,35 @@
+<MudDialog>
+    <TitleContent>
+        <span class="display">@Title</span>
+    </TitleContent>
+    <DialogContent>
+        @if (!string.IsNullOrEmpty(Note))
+        {
+            <div class="muted mb-3" style="font-size:.9rem">@Note</div>
+        }
+        <div class="d-flex align-center gap-2">
+            <MudNumericField T="long" @bind-Value="_amount" Min="1" Max="Max" Label="Amount (£)" Variant="Variant.Outlined"
+                             Immediate="true" Class="flex-grow-1" InputMode="InputMode.numeric" />
+            <MudButton Variant="Variant.Outlined" OnClick="@(() => _amount = Max)">Max</MudButton>
+        </div>
+        <div class="muted mt-1" style="font-size:.85rem">Up to @Money.Format(Max)</div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(Max <= 0)"
+                   OnClick="@(() => Dialog.Close(DialogResult.Ok(Math.Clamp(_amount, 1, Max))))">@ConfirmText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Note { get; set; }
+    [Parameter] public string ConfirmText { get; set; } = "OK";
+    [Parameter] public long Max { get; set; }
+    [Parameter] public long Initial { get; set; }
+
+    private long _amount;
+
+    protected override void OnInitialized() => _amount = Initial > 0 ? Math.Min(Initial, Max) : Max;
+}

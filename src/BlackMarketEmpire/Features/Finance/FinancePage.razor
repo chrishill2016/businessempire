@@ -1,0 +1,166 @@
+@page "/finance"
+@inject GameSession Session
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Money · Black Market Empire</PageTitle>
+
+<div class="page">
+    @if (Session.State is { } s)
+    {
+        <div class="d-flex align-center justify-space-between mb-3">
+            <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Credits" Size="24" /><span class="display" style="font-size:1.2rem">MONEY</span></div>
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => Nav.NavigateTo("play"))">Back</MudButton>
+        </div>
+
+        <div class="panel pa-4 d-flex justify-space-between">
+            <div><div class="eyebrow">Cash</div><div class="money fin-cash">@Money.Format(s.Cash)</div></div>
+            <div><div class="eyebrow">Bank</div><div class="money fin-bank positive">@Money.Format(s.Bank)</div></div>
+            <div style="text-align:right"><div class="eyebrow">You owe</div><div class="money fin-owed negative">@Money.Format(s.TotalDebt)</div></div>
+        </div>
+
+        @* ----- What you owe ----- *@
+        <div class="eyebrow mt-5 mb-2">What you owe</div>
+        <div class="panel">
+            @if (s.Debt > 0)
+            {
+                <div class="loan-row d-flex align-center gap-2 pa-3" data-loan="original">
+                    <div class="flex-grow-1">
+                        <div style="font-weight:700">Original stake</div>
+                        <div class="muted" style="font-size:.85rem">@((int)(Session.Engine.Rules.DailyInterest * 100))% a day · pay anywhere</div>
+                    </div>
+                    <span class="money negative">@Money.Format(s.Debt)</span>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@(_busy || s.Cash == 0)" OnClick="RepayOriginal">Pay</MudButton>
+                </div>
+            }
+            @foreach (var loan in s.Loans.Where(l => l.Status == LoanStatus.Active))
+            {
+                var lender = GameCatalog.Lender(loan.LenderId);
+                var overdue = FinanceService.IsOverdue(loan, s.Day);
+                var canPay = lender.CityIds.Contains(s.CityId) && s.Cash > 0;
+                <div class="loan-row d-flex align-center gap-2 pa-3" data-loan="@loan.LenderId">
+                    <div class="flex-grow-1" style="min-width:0">
+                        <div style="font-weight:700">@lender.Name</div>
+                        <div class="@(overdue ? "negative" : "muted")" style="font-size:.85rem">
+                            @(loan.Rate.ToString("P1")) a day · @(overdue ? "OVERDUE" : $"due day {loan.DueDay}") · pay in @FinanceService.CityList(lender)
+                        </div>
+                    </div>
+                    <span class="money negative">@Money.Format(loan.Owed)</span>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@(_busy || !canPay)" OnClick="@(() => RepayLoan(loan))">Pay</MudButton>
+                </div>
+            }
+            @if (s.TotalDebt == 0)
+            {
+                <div class="pa-3 positive">You're debt free.</div>
+            }
+        </div>
+
+        @* ----- Lenders ----- *@
+        <div class="eyebrow mt-5 mb-2">Lenders</div>
+        @foreach (var lender in GameCatalog.Lenders)
+        {
+            var offer = Session.Engine.LoanOffer(s, lender.Id);
+            <div class="panel pa-3 mb-2 lender-card" data-lender="@lender.Id">
+                <div class="d-flex justify-space-between align-center">
+                    <div>
+                        <span style="font-weight:700">@lender.Name</span>
+                        <span class="muted" style="font-size:.85rem"> · @FinanceService.CityList(lender)</span>
+                    </div>
+                    <span class="stars" title="Your reputation">@(new string('★', offer.Stars))<span class="muted">@(new string('★', 5 - offer.Stars))</span></span>
+                </div>
+                <div class="muted" style="font-size:.85rem;line-height:1.3">@lender.Blurb</div>
+                <div class="d-flex justify-space-between align-center mt-2 gap-2">
+                    <div style="font-size:.9rem">
+                        <span class="money">@offer.Rate.ToString("P1")</span> a day ·
+                        up to <span class="money">@Money.Format(offer.Available)</span> · @lender.TermDays days
+                    </div>
+                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || !offer.CanBorrow)"
+                               OnClick="@(() => Borrow(offer))">Borrow</MudButton>
+                </div>
+                @if (offer.Refusal is { } why)
+                {
+                    <div class="lender-refusal @(lender.CityIds.Contains(s.CityId) ? "negative" : "muted")" style="font-size:.85rem">@why</div>
+                }
+            </div>
+        }
+        <div class="muted" style="font-size:.85rem">
+            Repay on time to improve your reputation and get better rates. Miss a deadline and the rate goes up, your stars drop,
+            and their enforcers may find you in their cities. Arrests and heat make every lender charge more.
+        </div>
+
+        @* ----- Bank ----- *@
+        <div class="eyebrow mt-5 mb-2">Bank account</div>
+        <div class="panel pa-4">
+            <div class="muted" style="font-size:.9rem">
+                Money in the bank is safe from fines, enforcers and dying, and earns @((Session.Engine.Rules.BankInterest * 100).ToString("0.#"))% a day.
+                Branches: @string.Join(", ", GameCatalog.BankCities.Select(id => GameCatalog.City(id).Name)).
+            </div>
+            @if (FinanceService.HasBankHere(s))
+            {
+                <div class="d-flex gap-2 mt-3">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || s.Cash == 0)" OnClick="Deposit" Class="flex-grow-1">Deposit</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(_busy || s.Bank == 0)" OnClick="Withdraw" Class="flex-grow-1">Withdraw</MudButton>
+                </div>
+            }
+            else
+            {
+                <div class="negative mt-2" style="font-size:.9rem">No branch in @GameCatalog.City(s.CityId).Name.</div>
+            }
+        </div>
+    }
+    else
+    {
+        <MudButton Href="" Variant="Variant.Filled" Color="Color.Primary">Back to start</MudButton>
+    }
+</div>
+
+@code {
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.LoadAsync();
+        if (Session.State is { IsOver: true }) Nav.NavigateTo("game-over");
+    }
+
+    private Task RepayOriginal() => AskAmount("PAY THE ORIGINAL STAKE", "Pay", Math.Min(Session.State!.Cash, Session.State.Debt),
+        amount => Session.RepayAsync(amount));
+
+    private Task RepayLoan(Loan loan) => AskAmount($"PAY {GameCatalog.Lender(loan.LenderId).Name.ToUpperInvariant()}", "Pay",
+        Math.Min(Session.State!.Cash, loan.Owed), amount => Session.RepayLoanAsync(loan.Id, amount));
+
+    private Task Borrow(LoanOffer offer) => AskAmount($"BORROW FROM {offer.Lender.Name.ToUpperInvariant()}", "Borrow", offer.Available,
+        amount => Session.BorrowAsync(offer.Lender.Id, amount),
+        $"{offer.Rate:P1} a day, compounding. Due in {offer.Lender.TermDays} days.");
+
+    private Task Deposit() => AskAmount("DEPOSIT", "Deposit", Session.State!.Cash, amount => Session.DepositAsync(amount));
+
+    private Task Withdraw() => AskAmount("WITHDRAW", "Withdraw", Session.State!.Bank, amount => Session.WithdrawAsync(amount));
+
+    private async Task AskAmount(string title, string confirm, long max, Func<long, Task<ActionResult>> action, string? note = null)
+    {
+        var parameters = new DialogParameters<AmountDialog>
+        {
+            { d => d.Title, title },
+            { d => d.ConfirmText, confirm },
+            { d => d.Max, max },
+            { d => d.Note, note },
+        };
+        var dialog = await Dialogs.ShowAsync<AmountDialog>(null, parameters);
+        var result = await dialog.Result;
+        if (result is not { Canceled: false, Data: long amount }) return;
+
+        _busy = true;
+        try
+        {
+            var outcome = await action(amount);
+            Snackbar.Add(outcome.Message, outcome.Success ? Severity.Normal : Severity.Warning);
+            if (Session.State is { PendingEncounter: not null } or { IsOver: true }) Nav.NavigateTo("play");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

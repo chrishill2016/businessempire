@@ -14,7 +14,7 @@
             var heat = State.HeatIn(city.Id);
             <div class="travel-city panel pa-3 mt-3" data-city="@city.Id">
                 <div class="d-flex justify-space-between align-center">
-                    <span><b>@city.Name</b> <span class="muted">@city.Country</span></span>
+                    <span><b>@city.Name</b> <span class="muted">@city.Country</span> <span class="danger-@city.Danger.ToString().ToLowerInvariant()" style="font-size:.8rem">· @city.Danger danger</span></span>
                     @if (HasScanner && heat > 0)
                     {
                         <span class="negative" style="font-size:.85rem"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Heat @heat</span>
