@@ -44,6 +44,10 @@ public sealed class GameSession(GameEngine engine, ILocalStore store, HighScoreS
     public Task<ActionResult> WithdrawAsync(long amount) => ApplyAsync(s => engine.Withdraw(s, amount));
     public Task<ActionResult> RentStashAsync(StashTier tier) => ApplyAsync(s => engine.RentStash(s, tier));
     public Task<ActionResult> StoreAsync(string goodId, int qty) => ApplyAsync(s => engine.Store(s, goodId, qty));
+    public Task<ActionResult> CheckRumourAsync(Guid newsId, InformantTier tier) => ApplyAsync(s => engine.CheckRumour(s, newsId, tier));
+    public Task<ActionResult> BuyTipOffAsync() => ApplyAsync(engine.BuyTipOff);
+    public Task<ActionResult> BuyContactReportAsync(string cityId) => ApplyAsync(s => engine.BuyContactReport(s, cityId));
+    public Task<ActionResult> ArrangeShortageAsync(string cityId, string goodId) => ApplyAsync(s => engine.ArrangeShortage(s, cityId, goodId));
     public Task<ActionResult> TakeFromStashAsync(string goodId, int qty) => ApplyAsync(s => engine.TakeFromStash(s, goodId, qty));
     public Task<ActionResult> WaitAsync() => ApplyAsync(engine.Wait);
     public Task<ActionResult> RepayAsync(long amount) => ApplyAsync(s => engine.RepayDebt(s, amount));

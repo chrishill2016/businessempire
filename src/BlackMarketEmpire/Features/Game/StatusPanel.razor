@@ -52,6 +52,10 @@
         <div class="meter warn flex-grow-1"><div style="width:@(Heat)%"></div></div>
         <span class="money status-heat @(Heat >= 50 ? "negative" : null)" style="min-width:2.5rem;text-align:right">@Heat</span>
     </div>
+    @if (State.CrackdownIn(State.CityId) is { Known: true } crackdown)
+    {
+        <div class="crackdown-badge mt-2 status-crackdown">🚨 Police crackdown here until day @crackdown.EndDay. Stops are far more likely.</div>
+    }
 </div>
 
 @code {

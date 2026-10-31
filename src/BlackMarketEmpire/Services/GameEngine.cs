@@ -6,8 +6,11 @@ namespace BlackMarketEmpire.Services;
 /// All the game rules. Stateless: every method acts on the <see cref="GameState"/> it's given,
 /// which keeps it easy to test and to save/resume.
 /// </summary>
-public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, ShippingService shipping, FinanceService finance, GameRules rules)
+public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, ShippingService shipping, FinanceService finance, GameRules rules,
+    IntelService? intelService = null)
 {
+    private readonly IntelService intel = intelService ?? new IntelService(new SystemRandomSource(), events);
+
     public const string StartCityId = "london";
 
     public GameRules Rules => rules;
@@ -262,6 +265,8 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         RefreshMarket(state);
         Touch(state);
         var message = $"Day {state.Day}. You lie low for a day. New prices in {GameCatalog.City(state.CityId).Name}.";
+        var intel = events.RevealCity(state, state.CityId).Select(DescribeReveal).ToList();
+        if (intel.Count > 0) message = $"{message} {string.Join(" ", intel)}";
         if (Enforcers(state) is { } visit)
         {
             message = $"{message} {visit}";
@@ -326,6 +331,19 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
 
     public ActionResult TakeFromStash(GameState state, string goodId, int quantity) =>
         Apply(state, () => FinanceService.Take(state, goodId, quantity));
+
+    // ----- Intel -----
+
+    public ActionResult CheckRumour(GameState state, Guid newsId, InformantTier tier) =>
+        Apply(state, () => intel.CheckRumour(state, rules, newsId, tier));
+
+    public ActionResult BuyTipOff(GameState state) => Apply(state, () => intel.BuyTipOff(state, rules));
+
+    public ActionResult BuyContactReport(GameState state, string cityId) =>
+        Apply(state, () => intel.BuyContactReport(state, rules, market, cityId));
+
+    public ActionResult ArrangeShortage(GameState state, string cityId, string goodId) =>
+        Apply(state, () => intel.ArrangeShortage(state, rules, cityId, goodId));
 
     /// <summary>Runs a simple action with the usual guard, saving and logging.</summary>
     private ActionResult Apply(GameState state, Func<ActionResult> action)

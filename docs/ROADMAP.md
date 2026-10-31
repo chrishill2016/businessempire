@@ -80,17 +80,17 @@ Each phase ships as its own pull request into `main`.
 - [x] **Top 100 high scores** with start/end date and time, days played, how the run ended, best single trade; latest run highlighted; "show more" paging; clear all scores
 - [ ] Later: a world map view, seasonal routes/closures, arrested as an end reason when a jail term outlasts the run
 
-## Phase 7 — Intel network
+## Phase 7 — Intel network ✅
 Better information means better trades, at a price.
-- [ ] **Informants** you pay in each city:
-  - Tell you whether a rumour is true **before** you travel (with a reliability rating that improves the more you use them)
-  - Cheap informants are wrong sometimes; expensive ones rarely
-- [ ] **Advance warning:** hear about a spike or crash a day or two **before it starts**, so you can be there early or stock up beforehand
-- [ ] **Insider tips:** rare, expensive tips that boost the chance of an event actually happening in a city, or tell you the exact multiplier and how long it lasts
-- [ ] **Market contacts:** see today's prices in another city without travelling (one city per contact)
-- [ ] **Crackdown warnings:** know when a city's police are about to clamp down (higher stop chance for a few days)
-- [ ] Intel can be **planted**: rival crews feed you false tips on purpose, and the best informants help you spot them
-- [ ] Ties in with reputation: informants trust you more (better, cheaper intel) if you pay well and don't get them burned
+- [x] **Informants** in every city check any rumour before you travel:
+  - Street (£150, 75% reliable) or connected (£600, 95% reliable; also tells you the exact multiplier and end day of a real event)
+  - **Trust:** each paid job in a city raises trust (up to ★★★★★), adding up to +15% street / +4% connected accuracy
+- [x] **Advance warning:** some spikes and crashes are now planned in secret 1–3 days ahead. A tip-off (£1,000) reveals the next one before anyone else knows. If nothing is brewing it tells you about a crackdown instead, and there's no charge if there's nothing at all.
+- [x] **Insider influence:** pay a fixer to cause a shortage (a price spike) in any city two days from now. Price scales with the good, 60% success (+5% per trust), and you only find out if it worked when the day comes.
+- [x] **Market contacts** (£400): today's prices in any other city, every active spike or crash there with its exact size and end day, and whether there's a crackdown
+- [x] **Police crackdowns:** hidden 2–4 day crackdowns make stops 50% more likely. You learn about them from the police scanner (as they're planned), tip-offs, contacts, or by arriving in the middle of one.
+- [x] Intel feed shows insider tips, informant verdicts and known sizes; travel list shows tips, verdicts and crackdowns
+- [ ] Later: rival crews planting false tips on purpose, informants who get burned (and stop helping) if you're arrested after using them, buying a contact's standing order (a daily report from one city)
 
 ## Phase 8 — Polish
 - [ ] Sound and haptics

@@ -115,7 +115,7 @@
         try
         {
             var result = await action();
-            Snackbar.Add(result.Message, result.Success ? Severity.Normal : Severity.Warning);
+            Snackbar.Notify(result.Message, result.Success);
         }
         finally
         {

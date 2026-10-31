@@ -58,7 +58,7 @@
     }
 
     private void OnUpdateReady() => InvokeAsync(() =>
-        Snackbar.Add("New version available", Severity.Info, options =>
+        Snackbar.Add(SnackbarExtensions.UpdateMessage, Severity.Info, options =>
         {
             options.RequireInteraction = true;
             options.Action = "Refresh";

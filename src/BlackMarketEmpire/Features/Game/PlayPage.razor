@@ -46,6 +46,8 @@
                        Disabled="_busy" OnClick="@(() => Nav.NavigateTo("finance"))">Money</MudButton>
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Warehouse"
                        Disabled="_busy" OnClick="@(() => Nav.NavigateTo("stash"))">Stash</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Visibility" Class="wide"
+                       Disabled="_busy" OnClick="@(() => Nav.NavigateTo("intel"))">Intel</MudButton>
         </div>
 
         @if (state.Shipments.Count > 0)
@@ -120,7 +122,7 @@
             if (result is not { Canceled: false, Data: EncounterChoice choice }) continue;
 
             var outcome = await Session.ResolveEncounterAsync(choice);
-            Snackbar.Add(outcome.Message, outcome.Success ? Severity.Normal : Severity.Warning);
+            Snackbar.Notify(outcome.Message, outcome.Success);
             StateHasChanged();
         }
         if (Session.State is { IsOver: true })
@@ -223,7 +225,7 @@
                 await HandleEncounters();
                 return;
             }
-            Snackbar.Add(result.Message, result.Success ? Severity.Normal : Severity.Warning);
+            Snackbar.Notify(result.Message, result.Success);
             if (Session.State is { IsOver: true })
             {
                 Nav.NavigateTo("game-over");

@@ -10,6 +10,8 @@ public enum NewsStatus
     Expired,
     /// <summary>You went there and it was nonsense.</summary>
     False,
+    /// <summary>Paid-for advance warning about something that hasn't started yet.</summary>
+    Tip,
 }
 
 /// <summary>
@@ -26,4 +28,20 @@ public sealed class NewsItem
     public string Headline { get; set; } = "";
     public bool IsTrue { get; set; }
     public NewsStatus Status { get; set; } = NewsStatus.Rumour;
+
+    /// <summary>For tips: the day it's due to start.</summary>
+    public int? StartsDay { get; set; }
+
+    /// <summary>The event this headline is about (real events only).</summary>
+    public Guid? EventId { get; set; }
+
+    /// <summary>What an informant told you: true = "it's real", false = "it's rubbish", null = not checked.</summary>
+    public bool? InformantSaysTrue { get; set; }
+
+    /// <summary>How reliable that informant was.</summary>
+    public double InformantAccuracy { get; set; }
+
+    /// <summary>Extra detail from a connected informant: the real multiplier and last day.</summary>
+    public double? KnownMultiplier { get; set; }
+    public int? KnownEndDay { get; set; }
 }
