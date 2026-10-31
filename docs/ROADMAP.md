@@ -69,7 +69,16 @@ Spend cash on gear that sticks with you for the rest of the run. Each item is a 
 
 ## Phase 5 — Economy depth
 - [ ] **Loans:** borrow more money mid-run to fund bigger deals
-  - **Loan shark:** available anywhere, lends fast, charges high daily interest (like your starting debt). There's a borrowing limit that grows as you repay on time.
+  - **Several loan sharks**, each with their own terms and personality, for example:
+    - *"Fast Eddie"* (London): small loans, 8%/day, forgiving if you're a day late
+    - *"The Accountant"* (Amsterdam): bigger loans, 4%/day, strict deadlines, no extensions
+    - *"Mama Rossi"* (Marseille): mid-size, 6%/day, sends enforcers the day you're overdue
+    - Each lender only operates in certain cities, so you have to be there to borrow or repay
+  - **Reputation decides your rates.** Each lender tracks how you've treated them:
+    - Repay on time or early → lower interest, higher borrowing limits, longer deadlines
+    - Pay late or skip repayments → higher rates, smaller limits, and eventually they won't lend to you at all
+    - A big arrest record or a lot of heat makes every lender nervous (worse rates across the board)
+    - Reputation shown as a simple rating per lender (e.g. ★–★★★★★) with the rate they'd offer you now
   - **Bank loan:** cheaper interest, but only in some cities and only if your net worth is good enough. It's refused if your rap sheet has arrests.
   - **Underground lender** in certain cities: big sums, but miss the repayment date and their enforcers come after you (health damage, goods taken)
   - Repayment deadlines: if a loan is overdue, interest rises, and loan-shark "visits" can happen when you arrive in a city
