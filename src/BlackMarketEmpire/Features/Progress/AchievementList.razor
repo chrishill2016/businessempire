@@ -1,0 +1,27 @@
+<div class="panel">
+    @foreach (var a in Items)
+    {
+        var unlocked = Unlocked.TryGetValue(a.Id, out var when);
+        <div class="achievement @(unlocked ? null : "locked") @(Fresh.Contains(a.Id) ? "fresh" : null)" data-achievement="@a.Id">
+            <span class="a-icon">@a.Icon</span>
+            <div class="flex-grow-1">
+                <div style="font-weight:700">@a.Name</div>
+                <div class="muted" style="font-size:.85rem">@a.Description</div>
+            </div>
+            @if (Fresh.Contains(a.Id))
+            {
+                <span class="event-badge spike">NEW</span>
+            }
+            else if (unlocked)
+            {
+                <span class="muted" style="font-size:.75rem;white-space:nowrap">@when.ToLocalTime().ToString("d MMM")</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<Achievement> Items { get; set; } = [];
+    [Parameter] public IReadOnlyDictionary<string, DateTime> Unlocked { get; set; } = new Dictionary<string, DateTime>();
+    [Parameter] public IReadOnlyCollection<string> Fresh { get; set; } = [];
+}

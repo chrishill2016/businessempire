@@ -368,3 +368,59 @@ public class SnackbarTests : BunitContext
         Assert.DoesNotContain("First", messages);
     }
 }
+
+public class PolishComponentTests : BunitContext
+{
+    public PolishComponentTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+    }
+
+    [Fact]
+    public void AchievementList_shows_locked_unlocked_and_new()
+    {
+        var items = ProgressService.All.Take(3).ToList();
+        var unlocked = new Dictionary<string, DateTime> { [items[0].Id] = DateTime.UtcNow, [items[1].Id] = DateTime.UtcNow };
+
+        var cut = Render<BlackMarketEmpire.Features.Progress.AchievementList>(p => p
+            .Add(c => c.Items, items)
+            .Add(c => c.Unlocked, unlocked)
+            .Add(c => c.Fresh, new[] { items[1].Id }));
+
+        var rows = cut.FindAll(".achievement");
+        Assert.DoesNotContain("locked", rows[0].ClassName);
+        Assert.Contains("NEW", rows[1].TextContent);
+        Assert.Contains("locked", rows[2].ClassName);
+    }
+
+    [Fact]
+    public void HighScoreTable_badges_daily_and_hard_runs()
+    {
+        HighScore[] scores =
+        [
+            new(Guid.NewGuid(), 10, DateTime.UtcNow, "London", ChallengeDate: "2026-10-31"),
+            new(Guid.NewGuid(), 5, DateTime.UtcNow.AddMinutes(-1), "London", Difficulty: Difficulty.Hard),
+            new(Guid.NewGuid(), 1, DateTime.UtcNow.AddMinutes(-2), "London"),
+        ];
+
+        var cut = Render<HighScoreTable>(p => p.Add(c => c.Scores, scores));
+
+        var rows = cut.FindAll(".score-row");
+        Assert.Contains("DAILY", rows[0].TextContent);
+        Assert.Contains("HARD", rows[1].TextContent);
+        Assert.DoesNotContain("NORMAL", rows[2].TextContent);
+    }
+
+    [Fact]
+    public void StatusPanel_shows_the_run_mode()
+    {
+        var hard = TestGame.Engine().NewGame();
+        hard.Difficulty = Difficulty.Hard;
+        var daily = TestGame.Engine().NewGame();
+        daily.ChallengeDate = "2026-10-31";
+
+        Assert.Contains("HARD", Render<StatusPanel>(p => p.Add(c => c.State, hard).Add(c => c.TotalDays, 30)).Find(".status-mode").TextContent);
+        Assert.Contains("DAILY", Render<StatusPanel>(p => p.Add(c => c.State, daily).Add(c => c.TotalDays, 30)).Find(".status-mode").TextContent);
+    }
+}

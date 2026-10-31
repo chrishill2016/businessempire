@@ -9,6 +9,13 @@ namespace BlackMarketEmpire.Models;
 public sealed class GameState
 {
     public Guid RunId { get; set; } = Guid.NewGuid();
+    public Difficulty Difficulty { get; set; } = Difficulty.Normal;
+
+    /// <summary>Set for the daily challenge: the date (yyyy-MM-dd) whose seed this run uses.</summary>
+    public string? ChallengeDate { get; set; }
+
+    /// <summary>The run's random-number generator state, so a resumed run carries on exactly where it left off.</summary>
+    public ulong RngState { get; set; }
     public int Day { get; set; } = 1;
     public string CityId { get; set; } = "";
     public long Cash { get; set; }
@@ -75,6 +82,9 @@ public sealed class GameState
     public EndReason EndReason { get; set; }
     public DateTime StartedUtc { get; set; } = DateTime.UtcNow;
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
+
+    [JsonIgnore]
+    public bool IsDaily => ChallengeDate is not null;
 
     [JsonIgnore]
     public int UnitsHeld => Inventory.Values.Sum();

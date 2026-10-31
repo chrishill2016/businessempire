@@ -334,3 +334,26 @@ html, body {
 .action-btn.primary { background: var(--bme-acid); color: var(--bme-bg); border-color: var(--bme-acid); box-shadow: 0 0 12px rgba(57,255,136,.35); }
 .action-btn.money-btn { color: var(--bme-magenta); }
 .action-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+
+/* Home: difficulty and daily challenge */
+.difficulty-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.difficulty-option {
+    display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left;
+    background: var(--bme-bg); color: var(--bme-text); border: 1px solid var(--bme-line-strong); border-radius: 8px;
+    padding: 8px 10px; cursor: pointer; font-family: var(--bme-body);
+}
+.difficulty-option.selected { border-color: var(--bme-acid); box-shadow: 0 0 10px rgba(57,255,136,.3); }
+.difficulty-option .do-name { font-family: var(--bme-display); font-weight: 800; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+.difficulty-option .do-desc { font-size: .75rem; color: var(--bme-muted); line-height: 1.25; }
+.home-links { display: flex; justify-content: space-around; flex-wrap: wrap; }
+
+/* Achievements & stats */
+.achievement { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--bme-line); }
+.achievement:last-child { border-bottom: none; }
+.achievement .a-icon { font-size: 1.6rem; width: 2.2rem; text-align: center; }
+.achievement.locked { opacity: .45; }
+.achievement.locked .a-icon { filter: grayscale(1); }
+.achievement.fresh { background: rgba(57,255,136,.08); }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-grid .panel { padding: 10px 12px; }
+.stat-grid .v { font-family: var(--bme-display); font-weight: 700; font-size: 1.05rem; }

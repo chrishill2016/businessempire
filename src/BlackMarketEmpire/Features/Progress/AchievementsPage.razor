@@ -1,0 +1,22 @@
+@page "/achievements"
+@inject ProgressService Progress
+
+<PageTitle>Achievements · Black Market Empire</PageTitle>
+
+<div class="page">
+    <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Vault" Size="24" /><span class="display" style="font-size:1.2rem">ACHIEVEMENTS</span></div>
+        <MudButton Href="" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack">Back</MudButton>
+    </div>
+    @if (_unlocked is not null)
+    {
+        <div class="muted mb-2 achievements-count">@_unlocked.Count of @ProgressService.All.Count unlocked</div>
+        <AchievementList Items="ProgressService.All" Unlocked="_unlocked" />
+    }
+</div>
+
+@code {
+    private Dictionary<string, DateTime>? _unlocked;
+
+    protected override async Task OnInitializedAsync() => _unlocked = await Progress.GetUnlockedAsync();
+}

@@ -12,4 +12,7 @@ public sealed record HighScore(
     EndReason Reason = EndReason.Finished,
     DateTime? StartedUtc = null,
     int DaysPlayed = 0,
-    long BestTrade = 0);
+    long BestTrade = 0,
+    Difficulty Difficulty = Difficulty.Normal,
+    /// <summary>Set for daily challenge runs (yyyy-MM-dd).</summary>
+    string? ChallengeDate = null);

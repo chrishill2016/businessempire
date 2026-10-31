@@ -1,0 +1,67 @@
+@page "/settings"
+@inject SettingsService Settings
+@inject IFeedback Feedback
+@inject ProgressService Progress
+@inject HighScoreService HighScores
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>Settings · Black Market Empire</PageTitle>
+
+<div class="page">
+    <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2"><MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" /><span class="display" style="font-size:1.2rem">SETTINGS</span></div>
+        <MudButton Href="" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack">Back</MudButton>
+    </div>
+
+    @if (_settings is { } s)
+    {
+        <div class="panel pa-4">
+            <MudSwitch T="bool" Value="s.SoundOn" ValueChanged="@(v => Save(() => s.SoundOn = v))" Color="Color.Primary" Label="Sound effects" />
+            <MudSwitch T="bool" Value="s.VibrationOn" ValueChanged="@(v => Save(() => s.VibrationOn = v))" Color="Color.Primary" Label="Vibration" />
+            <div class="muted mt-1" style="font-size:.85rem">Vibration only works on phones that support it (most Android phones; not iPhone).</div>
+            <div class="d-flex gap-2 flex-wrap mt-3">
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => Feedback.Play(SoundCue.Sell))">Test: sale</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => Feedback.Play(SoundCue.Siren))">Test: police</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => Feedback.Play(SoundCue.Achievement))">Test: award</MudButton>
+            </div>
+        </div>
+
+        <div class="eyebrow mt-5 mb-2">Your data</div>
+        <div class="panel pa-4">
+            <div class="muted" style="font-size:.9rem">Everything is stored on this device only. These can't be undone.</div>
+            <div class="d-flex gap-2 flex-wrap mt-3">
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ResetProgress">Reset stats &amp; achievements</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ClearScores">Clear high scores</MudButton>
+            </div>
+        </div>
+
+        <div class="muted mt-5" style="font-size:.85rem;text-align:center">Black Market Empire v@(AppInfo.Version)</div>
+    }
+</div>
+
+@code {
+    private AppSettings? _settings;
+
+    protected override async Task OnInitializedAsync() => _settings = await Settings.LoadAsync();
+
+    private async Task Save(Action change)
+    {
+        change();
+        await Settings.SaveAsync(_settings!);
+    }
+
+    private async Task ResetProgress()
+    {
+        if (await Dialogs.ShowMessageBoxAsync("Reset progress?", "Deletes your career stats and every achievement.", yesText: "Reset", cancelText: "Cancel") != true) return;
+        await Progress.ClearAsync();
+        Snackbar.Notify("Stats and achievements reset.");
+    }
+
+    private async Task ClearScores()
+    {
+        if (await Dialogs.ShowMessageBoxAsync("Clear high scores?", "Deletes every score on this device.", yesText: "Clear", cancelText: "Cancel") != true) return;
+        await HighScores.ClearAsync();
+        Snackbar.Notify("High scores cleared.");
+    }
+}

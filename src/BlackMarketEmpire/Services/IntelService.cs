@@ -158,6 +158,7 @@ public sealed class IntelService(IRandomSource random, EventService events)
             var ev = events.ScheduleEvent(state, rules, cityId, goodId, MarketEventKind.Spike, startDay);
             item.IsTrue = true;
             item.EventId = ev.Id;
+            state.Stats.FixerSuccesses++;
         }
         events.AddNews(state, item, rules, inTransit: false);
         return ActionResult.Ok($"Paid the fixer {Money.Format(price)}. A {good.Name.ToLowerInvariant()} shortage in {city} from day {startDay} — if they deliver.");

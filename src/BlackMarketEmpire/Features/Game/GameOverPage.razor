@@ -1,6 +1,7 @@
 @page "/game-over"
 @inject GameSession Session
 @inject HighScoreService HighScores
+@inject ProgressService Progress
 @inject NavigationManager Nav
 
 <PageTitle>Run over · Black Market Empire</PageTitle>
@@ -33,9 +34,17 @@
             {
                 <MudText Typo="Typo.caption" Class="negative">You finished with @_state.UnitsHeld unsold items — they're worth nothing now.</MudText>
             }
+            <div class="muted run-label" style="font-size:.9rem">@HomePage.RunLabel(_state)</div>
+            @if (Session.NewAchievements.Count > 0)
+            {
+                <div style="width:100%" class="new-achievements">
+                    <div class="eyebrow mb-2">Achievements unlocked</div>
+                    <AchievementList Items="Session.NewAchievements" Unlocked="_unlocked" Fresh="@Session.NewAchievements.Select(a => a.Id).ToList()" />
+                </div>
+            }
             <div style="width:100%"><RapSheet Stats="_state.Stats" Reason="_state.EndReason" /></div>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="PlayAgain" Class="mt-2" Style="height:56px">
-                Play again
+                Play again (@(_state.Difficulty.ToString().ToLowerInvariant()))
             </MudButton>
         </MudStack>
 
@@ -50,12 +59,14 @@
 @code {
     private GameState? _state;
     private IReadOnlyList<HighScore>? _scores;
+    private Dictionary<string, DateTime> _unlocked = [];
 
     protected override async Task OnInitializedAsync()
     {
         await Session.LoadAsync();
         _state = Session.State is { IsOver: true } s ? s : null;
         _scores = await HighScores.GetTopAsync();
+        _unlocked = await Progress.GetUnlockedAsync();
     }
 
     private static string Headline(GameState state) => state.EndReason switch
@@ -67,7 +78,7 @@
 
     private async Task PlayAgain()
     {
-        await Session.StartNewAsync();
+        await Session.StartNewAsync(_state?.Difficulty ?? Difficulty.Normal);
         Nav.NavigateTo("play");
     }
 }
