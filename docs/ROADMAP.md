@@ -2,16 +2,17 @@
 
 Each phase ships as its own pull request into `main`.
 
-## Phase 1 — Core loop
-- [ ] Project scaffold (Blazor WASM PWA, MudBlazor dark theme, CI/CD to GitHub Pages)
-- [ ] 6 cities, ~8 contraband goods, each with a price range
-- [ ] Daily price fluctuation per city
-- [ ] Buy / sell with cash and a carry-capacity limit
-- [ ] Starting debt that must be repaid to count towards score
-- [ ] Travel between cities costs days (1–3 depending on route)
-- [ ] 30-day limit, game-over screen, net-worth score
-- [ ] Local top-10 high scores (IndexedDB)
-- [ ] Version in footer, online/offline indicator, "new version available" prompt
+## Phase 1 — Core loop ✅
+- [x] Project scaffold (Blazor WASM PWA, MudBlazor dark theme, CI/CD to GitHub Pages)
+- [x] 6 cities, 8 black-market goods, each with a price range and per-city price bias
+- [x] Daily price changes per city; not every good is traded every day
+- [x] Buy / sell with cash and a 100-item suitcase limit
+- [x] £5,000 starting debt with 5% daily interest; repay any time
+- [x] Travel between cities costs days (1–3 depending on route)
+- [x] 30-day limit, "wait a day", retire early, game-over screen, score = cash − debt
+- [x] Local top-10 high scores (IndexedDB)
+- [x] Run auto-saves after every action and resumes when you reopen the app
+- [x] Version in footer, online/offline indicator, "new version available" prompt
 
 ## Phase 2 — Market events
 - [ ] Random events that spike or crash a good's price in a city for several days
@@ -48,7 +49,19 @@ Each phase ships as its own pull request into `main`.
 - [ ] Capacity upgrades (bigger bag, van, warehouse)
 - [ ] City risk profiles (some cities lucrative but dangerous)
 
-## Phase 6 — Polish
+## Phase 6 — Bigger world & score history
+- [ ] **More cities** — e.g. New York, Miami, Bogotá, Lagos, Bangkok, Sydney, Moscow, Naples
+  - Regions/continents so long-haul trips take longer (and later need flights)
+  - Some cities only reachable by certain travel methods (ties into Phase 4)
+- [ ] **More goods** — e.g. untaxed fuel, pirated games, counterfeit cash, rare wildlife parts (high risk), stolen car parts, fake medicines, cloned bank cards, rare whisky
+  - Goods with different sizes (a painting takes more suitcase space than a phone)
+  - Region-specific goods only sold in certain cities
+- [ ] **Top 100 high scores** kept on the device (currently top 10)
+  - Each entry shows the **run's start and end dates** (start date is already saved with each run)
+  - Extra details per entry: days played, how the run ended (finished / retired early / arrested / killed), best single trade
+  - Scroll/paginate the table, highlight your latest run, option to clear scores
+
+## Phase 7 — Polish
 - [ ] Sound and haptics
 - [ ] Run statistics, achievements
 - [ ] Difficulty modes / seeded "daily challenge"

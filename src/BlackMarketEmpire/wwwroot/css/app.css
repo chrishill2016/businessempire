@@ -1,0 +1,107 @@
+html, body {
+    margin: 0;
+    background: #121212;
+    color: #e0e0e0;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+    overscroll-behavior: none;
+}
+
+.boot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.boot-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffb300;
+    letter-spacing: 0.05em;
+}
+
+.loading-progress {
+    position: relative;
+    display: block;
+    width: 6rem;
+    height: 6rem;
+    margin: 1.5rem auto 0.5rem;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: #333;
+    stroke-width: 0.5rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+.loading-progress circle:last-child {
+    stroke: #ffb300;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
+
+.loading-progress-text {
+    text-align: center;
+    font-weight: bold;
+}
+
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}
+
+#blazor-error-ui {
+    background: #b71c1c;
+    color: #fff;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 2000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+#blazor-error-ui a { color: #fff; }
+
+/* Game layout helpers */
+.page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 12px 12px calc(72px + env(safe-area-inset-bottom));
+}
+
+.money { font-variant-numeric: tabular-nums; }
+.positive { color: #66bb6a; }
+.negative { color: #ef5350; }
+
+.app-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 12px calc(4px + env(safe-area-inset-bottom));
+    background: #1a1a1a;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    z-index: 1100;
+}
+
+/* Keep toasts above the footer bar */
+.mud-snackbar-location-bottom-center {
+    bottom: calc(44px + env(safe-area-inset-bottom)) !important;
+}

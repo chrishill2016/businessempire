@@ -1,0 +1,64 @@
+@page "/"
+@inject GameSession Session
+@inject NavigationManager Nav
+
+<PageTitle>Black Market Empire</PageTitle>
+
+<div class="page">
+    <MudStack Spacing="3" AlignItems="AlignItems.Center" Class="mt-6">
+        <img src="icon-192.png" alt="" width="96" height="96" style="border-radius:20px" />
+        <MudText Typo="Typo.h4" Align="Align.Center" Color="Color.Primary">Black Market Empire</MudText>
+        <MudText Align="Align.Center" Color="Color.Default">
+            30 days. One suitcase. A loan shark who wants his money back.
+        </MudText>
+
+        @if (_loaded)
+        {
+            @if (Session.HasActiveRun)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true"
+                           OnClick="@(() => Nav.NavigateTo("play"))">
+                    Continue — day @Session.State!.Day in @GameCatalog.City(Session.State.CityId).Name
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" OnClick="StartNew">New run</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="StartNew">
+                    Start a run
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Text" FullWidth="true" Href="scores" StartIcon="@Icons.Material.Filled.EmojiEvents">High scores</MudButton>
+        }
+    </MudStack>
+
+    <MudPaper Class="pa-4 mt-6" Elevation="0" Outlined="true">
+        <MudText Typo="Typo.h6" GutterBottom="true">How to play</MudText>
+        <MudText Typo="Typo.body2">
+            • Buy goods cheap in one city and sell them dear in another.<br />
+            • Every city has its own prices, and they change every day.<br />
+            • Travelling takes 1–3 days, and your debt grows 5% every day.<br />
+            • You can only carry 100 items.<br />
+            • After 30 days your score is your cash minus your debt. Anything unsold is worthless.
+        </MudText>
+        <MudText Typo="Typo.caption" Class="mt-3 d-block" Color="Color.Secondary">
+            It's a game. In real life, smuggling ends in prison or worse.
+        </MudText>
+    </MudPaper>
+</div>
+
+@code {
+    private bool _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.LoadAsync();
+        _loaded = true;
+    }
+
+    private async Task StartNew()
+    {
+        await Session.StartNewAsync();
+        Nav.NavigateTo("play");
+    }
+}

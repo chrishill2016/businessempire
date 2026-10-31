@@ -1,0 +1,13 @@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <div class="page">
+                <MudText Typo="Typo.h6">Nothing here.</MudText>
+                <MudButton Href="" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Back to start</MudButton>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

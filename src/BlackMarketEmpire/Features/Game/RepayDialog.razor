@@ -1,0 +1,29 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">🦈 Pay the loan shark</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2">You owe £@Debt.ToString("N0"). It grows 5% every day.</MudText>
+        <div class="d-flex align-center gap-2 mt-3">
+            <MudNumericField T="long" @bind-Value="_amount" Min="1" Max="Max" Label="Amount (£)" Variant="Variant.Outlined"
+                             Immediate="true" Class="flex-grow-1" InputMode="InputMode.numeric" />
+            <MudButton Variant="Variant.Outlined" OnClick="@(() => _amount = Max)">Max</MudButton>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(Max <= 0)"
+                   OnClick="@(() => Dialog.Close(DialogResult.Ok(Math.Clamp(_amount, 1, Max))))">Repay</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public long Debt { get; set; }
+    [Parameter] public long Cash { get; set; }
+
+    private long Max => Math.Min(Debt, Cash);
+    private long _amount;
+
+    protected override void OnInitialized() => _amount = Max;
+}

@@ -1,0 +1,46 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(Mode == TradeMode.Buy ? "Buy" : "Sell") @Good.Icon @Good.Name</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2">£@Price.ToString("N0") each · @(Mode == TradeMode.Buy ? $"you can buy up to {Max}" : $"you have {Max}")</MudText>
+        @if (Max == 0)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
+                @(Mode == TradeMode.Buy ? "You can't afford any, or your suitcase is full." : "You don't have any to sell.")
+            </MudAlert>
+        }
+        else
+        {
+            <MudSlider T="int" @bind-Value="_quantity" Min="1" Max="Max" Step="1" Color="Color.Primary" Class="mt-4" />
+            <div class="d-flex align-center gap-2">
+                <MudNumericField T="int" @bind-Value="_quantity" Min="1" Max="Max" Label="Quantity" Variant="Variant.Outlined"
+                                 Immediate="true" Class="flex-grow-1" InputMode="InputMode.numeric" />
+                <MudButton Variant="Variant.Outlined" OnClick="@(() => _quantity = Max)">Max</MudButton>
+            </div>
+            <MudText Typo="Typo.h6" Class="mt-3 money">Total: £@(((long)_quantity * Price).ToString("N0"))</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(Max == 0)" OnClick="Submit">
+            @(Mode == TradeMode.Buy ? "Buy" : "Sell") @_quantity
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public Good Good { get; set; } = default!;
+    [Parameter] public TradeMode Mode { get; set; }
+    [Parameter] public int Price { get; set; }
+    [Parameter] public int Max { get; set; }
+
+    private int _quantity;
+
+    protected override void OnInitialized() => _quantity = Max;
+
+    private void Submit() => Dialog.Close(DialogResult.Ok(Math.Clamp(_quantity, 1, Max)));
+
+    private void Cancel() => Dialog.Cancel();
+}
