@@ -1,0 +1,54 @@
+@page "/stats"
+@inject ProgressService Progress
+
+<PageTitle>Stats · Black Market Empire</PageTitle>
+
+<div class="page">
+    <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Market" Size="24" /><span class="display" style="font-size:1.2rem">CAREER STATS</span></div>
+        <MudButton Href="" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack">Back</MudButton>
+    </div>
+    @if (_career is { } c)
+    {
+        @if (c.RunsPlayed == 0)
+        {
+            <div class="muted stats-empty">Finish a run to start your career record.</div>
+        }
+        else
+        {
+            <div class="stat-grid">
+                <Stat Label="Runs played" Value="@c.RunsPlayed.ToString()" />
+                <Stat Label="Best score" Value="@Money.Format(c.BestScore ?? 0)" Class="@((c.BestScore ?? 0) < 0 ? "negative" : "positive")" />
+                <Stat Label="Average score" Value="@Money.Format(c.TotalScore / c.RunsPlayed)" />
+                <Stat Label="Best single trade" Value="@Money.Format(c.BestTrade)" />
+                <Stat Label="Total trading profit" Value="@Money.Format(c.TotalProfit)" Class="@(c.TotalProfit < 0 ? "negative" : null)" />
+                <Stat Label="Trades made" Value="@c.Trades.ToString("N0")" />
+                <Stat Label="Finished · retired · killed" Value="@($"{c.Finished} · {c.Retired} · {c.Killed}")" />
+                <Stat Label="Days played" Value="@c.DaysPlayed.ToString("N0")" />
+                <Stat Label="Times stopped" Value="@c.Stops.ToString()" />
+                <Stat Label="Arrests" Value="@c.Arrests.ToString()" Class="@(c.Arrests > 0 ? "negative" : null)" />
+                <Stat Label="Escapes" Value="@c.Escapes.ToString()" />
+                <Stat Label="Money borrowed" Value="@Money.Format(c.Borrowed)" />
+                <Stat Label="Cities visited" Value="@($"{c.CitiesVisited.Count} / {GameCatalog.Cities.Count}")" />
+                <Stat Label="Daily challenges" Value="@c.DailyBest.Count.ToString()" />
+            </div>
+
+            <div class="eyebrow mt-5 mb-2">Best by difficulty</div>
+            <div class="stat-grid">
+                @foreach (var d in Enum.GetValues<Difficulty>())
+                {
+                    <Stat Label="@d.ToString()" Value="@(c.BestByDifficulty.TryGetValue(d, out var v) ? Money.Format(v) : "—")" />
+                }
+            </div>
+        }
+        <MudButton Href="achievements" Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Class="mt-5" StartIcon="@Icons.Material.Filled.MilitaryTech">
+            Achievements
+        </MudButton>
+    }
+</div>
+
+@code {
+    private CareerStats? _career;
+
+    protected override async Task OnInitializedAsync() => _career = await Progress.GetCareerAsync();
+}

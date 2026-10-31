@@ -18,6 +18,7 @@ When the 30 days are up, your score is **cash plus savings, minus everything you
 - **Couriers and gear:** send goods ahead with a courier (they might get seized or stolen), and buy gear such as bigger bags, hidden linings, fake documents, a police scanner or body armour. Every city has its own **heat**, which rises when you cause trouble there.
 - **Money:** borrow from three loan sharks, a bank or the Syndicate. Each has its own rates and deadlines, and repaying on time improves your reputation and gets you better rates. Miss a deadline and enforcers come for you. Bank your cash to keep it safe, and rent a lock-up or warehouse to stash goods (they can be raided). Some cities are more dangerous than others.
 - **Intel:** pay informants to check rumours, buy tip-offs about spikes and crashes before they start, get price reports from contacts in other cities, or pay a fixer to cause a shortage. Watch out for police crackdowns.
+- **Modes and extras:** Easy, Normal and Hard difficulty, a daily challenge that's the same for everyone each day, sound and vibration, career stats and 19 achievements.
 - Your run saves after every move, so you can close the app and carry on later.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log.
@@ -32,7 +33,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log
 ```
 src/BlackMarketEmpire/
   Features/        Home, Game (market, travel, dialogs, game over), Scores
-  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), TravelService (routes & fares), ShippingService (couriers), FinanceService (loans, bank, stashes), IntelService (informants, tips, contacts, fixers), GameSession, HighScoreService, IndexedDbStore
+  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), TravelService (routes & fares), ShippingService (couriers), FinanceService (loans, bank, stashes), IntelService (informants, tips, contacts, fixers), ProgressService (career & achievements), EngineFactory + RunRandom (difficulty & seeded runs), GameSession, HighScoreService, IndexedDbStore
   Models/          GameState, Good, City, GameRules, HighScore
   wwwroot/         index.html, service worker, manifest, icons, js interop
 tests/BlackMarketEmpire.Tests/

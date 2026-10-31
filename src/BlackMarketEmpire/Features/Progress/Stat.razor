@@ -1,0 +1,10 @@
+<div class="panel stat-tile">
+    <div class="eyebrow">@Label</div>
+    <div class="v @Class">@Value</div>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string? Class { get; set; }
+}

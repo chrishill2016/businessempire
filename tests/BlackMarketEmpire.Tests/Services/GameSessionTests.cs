@@ -9,7 +9,7 @@ public class GameSessionTests
 
     public GameSessionTests() => _highScores = new HighScoreService(_store);
 
-    private GameSession NewSession() => new(TestGame.Engine(), _store, _highScores);
+    private GameSession NewSession() => new(TestGame.Factory(), _store, _highScores, new ProgressService(_store));
 
     [Fact]
     public async Task Starting_a_run_saves_it()

@@ -115,4 +115,36 @@ public sealed record GameRules
     public double FixerSuccessPerTrust { get; init; } = 0.05;
 
     public static GameRules Default { get; } = new();
+
+    /// <summary>Rules for a difficulty level. Normal is <see cref="Default"/>.</summary>
+    public static GameRules For(Difficulty difficulty) => difficulty switch
+    {
+        Difficulty.Easy => Easy,
+        Difficulty.Hard => Hard,
+        _ => Default,
+    };
+
+    private static readonly GameRules Easy = Default with
+    {
+        StartingCash = 5_000,
+        StartingDebt = 3_000,
+        DailyInterest = 0.03,
+        BaseStopChance = 0.08,
+        HealthPerDay = 5,
+        EnforcerVisitChance = 0.4,
+        FalseRumourChance = 0.15,
+        Capacity = 120,
+    };
+
+    private static readonly GameRules Hard = Default with
+    {
+        StartingCash = 1_500,
+        StartingDebt = 7_500,
+        DailyInterest = 0.07,
+        BaseStopChance = 0.16,
+        HealthPerDay = 2,
+        EnforcerVisitChance = 0.8,
+        FalseRumourChance = 0.35,
+        Capacity = 80,
+    };
 }

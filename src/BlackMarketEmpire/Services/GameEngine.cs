@@ -25,6 +25,7 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
             Capacity = rules.Capacity,
             Health = rules.MaxHealth,
         };
+        state.Stats.CitiesVisited.Add(state.CityId);
         events.SeedNewRun(state, rules);
         RefreshMarket(state);
         AddLog(state, $"Day 1. You land in {GameCatalog.City(state.CityId).Name} with £{state.Cash:N0} and a £{state.Debt:N0} debt to a loan shark. You have {rules.TotalDays} days.");
@@ -61,6 +62,7 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
 
         AddToInventory(state, goodId, quantity, price);
         state.Cash -= cost;
+        state.Stats.Trades++;
         if (cost >= rules.BigDealValue) EncounterService.AddHeat(state, state.CityId, rules.HeatOnBigDeal);
         Touch(state);
         var bought = $"Bought {quantity} × {good.Name} for £{cost:N0}.";
@@ -85,6 +87,8 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         if (revenue >= rules.BigDealValue) EncounterService.AddHeat(state, state.CityId, rules.HeatOnBigDeal);
         Touch(state);
         state.Stats.BestTrade = Math.Max(state.Stats.BestTrade, profit);
+        state.Stats.TotalProfit += profit;
+        state.Stats.Trades++;
         var outcome = profit >= 0 ? $"profit £{profit:N0}" : $"loss £{-profit:N0}";
         var sold = $"Sold {quantity} × {good.Name} for £{revenue:N0} ({outcome}).";
         return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, revenue) ? $"{sold} {state.PendingEncounter!.Intro}" : sold));
@@ -121,6 +125,7 @@ public sealed class GameEngine(MarketService market, EventService events, Encoun
         var days = option.Days;
         AdvanceDays(state, days, inTransit: true);
         state.CityId = cityId;
+        if (!state.Stats.CitiesVisited.Contains(cityId)) state.Stats.CitiesVisited.Add(cityId);
         RefreshMarket(state);
         Touch(state);
         var dest = GameCatalog.City(cityId);

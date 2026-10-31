@@ -15,6 +15,14 @@ else
                     <div class="d-flex align-center gap-2 flex-wrap">
                         <span class="money @(s.Score < 0 ? "negative" : "positive")" style="font-size:1.1rem">@Money.Format(s.Score)</span>
                         <span class="event-badge @OutcomeClass(s.Reason)">@OutcomeLabel(s.Reason)</span>
+                        @if (s.ChallengeDate is not null)
+                        {
+                            <span class="event-badge news-status">DAILY</span>
+                        }
+                        else if (s.Difficulty != Difficulty.Normal)
+                        {
+                            <span class="event-badge @(s.Difficulty == Difficulty.Hard ? "crash" : "size-badge")">@s.Difficulty.ToString().ToUpperInvariant()</span>
+                        }
                         @if (isHighlight)
                         {
                             <span class="event-badge spike">LATEST</span>

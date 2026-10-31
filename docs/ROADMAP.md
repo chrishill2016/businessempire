@@ -92,11 +92,15 @@ Better information means better trades, at a price.
 - [x] Intel feed shows insider tips, informant verdicts and known sizes; travel list shows tips, verdicts and crackdowns
 - [ ] Later: rival crews planting false tips on purpose, informants who get burned (and stop helping) if you're arrested after using them, buying a contact's standing order (a daily report from one city)
 
-## Phase 8 — Polish
-- [ ] Sound and haptics
-- [ ] Run statistics, achievements
-- [ ] Difficulty modes / seeded "daily challenge"
-- [ ] Optional online leaderboard (would add remote sync + `ISyncService`)
+## Phase 8 — Polish ✅
+- [x] **Sound and vibration:** synthesised Web Audio effects (no audio files) for buying, selling, travel, police sirens, escapes, arrests, injuries, death, money, intel, finishing and achievements, with matching vibration patterns. Both can be switched off in Settings.
+- [x] **Career stats:** runs played, best and average score, best single trade, total trading profit, trades, finished/retired/killed, days played, stops, arrests, escapes, money borrowed, cities visited, daily challenges, best score per difficulty
+- [x] **Achievements:** 19 to unlock (First Run, Millionaire, Globetrotter, Clean Record, Escape Artist, Hard Lesson, Made It Happen, Hard Case, Daily Grind and more), shown on the game-over screen and their own page
+- [x] **Difficulty modes:** Easy / Normal / Hard change starting cash and debt, interest, police, enforcers, rumour reliability, healing and suitcase size
+- [x] **Daily challenge:** a seeded run that's the same for everyone on the same day (Normal difficulty); your best daily score is shown on the home screen
+  - Every run now has its own saveable random-number generator, so a run resumed after closing the app plays out exactly as it would have
+- [x] Settings page: sound, vibration, test sounds, reset stats and achievements, clear high scores
+- [ ] **Optional online leaderboard:** needs a remote database plus an `ISyncService`. Left out for now because the game is offline-only with no account. Would suit the daily challenge, since everyone gets the same seed.
 
 ## Ideas backlog
 - Rival smugglers who undercut prices or rob you

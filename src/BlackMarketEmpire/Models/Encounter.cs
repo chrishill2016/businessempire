@@ -56,4 +56,12 @@ public sealed class RunStats
     public int StashRaids { get; set; }
     /// <summary>Biggest profit from a single sale.</summary>
     public long BestTrade { get; set; }
+    public int Trades { get; set; }
+    /// <summary>Profit (or loss) across every sale.</summary>
+    public long TotalProfit { get; set; }
+    public List<string> CitiesVisited { get; set; } = [];
+    public int FixerSuccesses { get; set; }
+    /// <summary>First day you owed nothing at all.</summary>
+    public int? DebtFreeDay { get; set; }
+    public int LowestHealth { get; set; } = 100;
 }

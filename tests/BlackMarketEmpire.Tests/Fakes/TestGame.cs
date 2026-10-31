@@ -23,6 +23,9 @@ public static class TestGame
         return new(new MarketService(random), new EventService(random), new EncounterService(random), new ShippingService(random), new FinanceService(random), rules ?? AllAvailable);
     }
 
+    /// <summary>Engine factory whose engines all use <see cref="AllAvailable"/> rules (or the given ones).</summary>
+    public static EngineFactory Factory(Func<Difficulty, GameRules>? rulesFor = null) => new(rulesFor ?? (_ => AllAvailable));
+
     /// <summary>A state with a fixed, known market in London.</summary>
     public static GameState StateWithMarket(GameEngine engine, Dictionary<string, int> market)
     {

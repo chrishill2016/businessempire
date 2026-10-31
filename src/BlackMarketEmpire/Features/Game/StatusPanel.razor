@@ -4,7 +4,7 @@
             <NeonIcon Kind="NeonIconKind.Zones" Size="20" />
             <div style="min-width:0">
                 <div class="display status-city" style="font-size:1.1rem;line-height:1.1">@City.Name.ToUpperInvariant()</div>
-                <div class="muted" style="font-size:.8rem">@City.Country · <span class="danger-@City.Danger.ToString().ToLowerInvariant()">@City.Danger danger</span></div>
+                <div class="muted" style="font-size:.8rem">@City.Country · <span class="danger-@City.Danger.ToString().ToLowerInvariant()">@City.Danger danger</span>@if (State.IsDaily) {<span class="status-mode"> · DAILY</span>} else if (State.Difficulty != Difficulty.Normal) {<span class="status-mode"> · @State.Difficulty.ToString().ToUpperInvariant()</span>}</div>
             </div>
         </div>
         <div style="text-align:right">
