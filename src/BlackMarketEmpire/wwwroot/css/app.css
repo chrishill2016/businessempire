@@ -18,6 +18,7 @@
     --bme-muted: #8A97AD;
     --bme-display: "Orbitron", "Rajdhani", system-ui, sans-serif;
     --bme-body: "Rajdhani", system-ui, sans-serif;
+    --bme-footer-h: 34px;
 }
 
 html, body {
@@ -110,6 +111,8 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
+    height: calc(var(--bme-footer-h) + env(safe-area-inset-bottom));
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -127,9 +130,9 @@ html, body {
 .mud-simple-table table thead th { font-family: var(--bme-body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--bme-muted); font-size: 0.75rem; }
 
 
-/* Keep toasts above the footer bar */
+/* Keep toasts above the footer (and the action bar on the play screen) */
 .mud-snackbar-location-bottom-center {
-    bottom: calc(44px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(var(--bme-footer-h) + 72px + env(safe-area-inset-bottom)) !important;
 }
 
 /* ----- Boot screen (before Blazor loads) ----- */
@@ -274,3 +277,60 @@ html, body {
 .news-extra { font-size: .85rem; margin-top: 2px; }
 .status-tip .news-status { color: #FACC15; }
 .crackdown-badge { color: var(--bme-magenta); font-size: .8rem; }
+
+/* ----- Play screen: status pinned at the top, list scrolls, actions pinned at the bottom ----- */
+.play-layout {
+    position: fixed;
+    top: calc(var(--mud-appbar-height) - var(--mud-appbar-height) / 4); /* dense app bar */
+    bottom: calc(var(--bme-footer-h) + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.play-top { flex: none; padding: 8px 12px 0; }
+.play-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 12px 12px;
+}
+.status-panel { padding: 10px 12px; }
+.status-panel .money { font-size: 1rem; }
+
+.action-bar {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--bme-bg);
+    border-top: 1px solid var(--bme-line);
+}
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 54px;
+    padding: 4px 0;
+    background: var(--bme-panel);
+    color: var(--bme-acid);
+    border: 1px solid var(--bme-line-strong);
+    border-radius: 8px;
+    font-family: var(--bme-display);
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.action-btn:active:not(:disabled) { transform: scale(0.96); }
+.action-btn.primary { background: var(--bme-acid); color: var(--bme-bg); border-color: var(--bme-acid); box-shadow: 0 0 12px rgba(57,255,136,.35); }
+.action-btn.money-btn { color: var(--bme-magenta); }
+.action-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }

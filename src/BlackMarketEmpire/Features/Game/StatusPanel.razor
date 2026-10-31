@@ -1,60 +1,60 @@
-<div class="panel pa-4">
-    <div class="d-flex justify-space-between align-start">
-        <div>
-            <div class="eyebrow">Current zone</div>
-            <div class="d-flex align-center gap-2 mt-1">
-                <NeonIcon Kind="NeonIconKind.Zones" Size="22" />
-                <span class="display status-city" style="font-size:1.25rem">@City.Name.ToUpperInvariant()</span>
+<div class="panel status-panel">
+    <div class="d-flex justify-space-between align-center">
+        <div class="d-flex align-center gap-2" style="min-width:0">
+            <NeonIcon Kind="NeonIconKind.Zones" Size="20" />
+            <div style="min-width:0">
+                <div class="display status-city" style="font-size:1.1rem;line-height:1.1">@City.Name.ToUpperInvariant()</div>
+                <div class="muted" style="font-size:.8rem">@City.Country · <span class="danger-@City.Danger.ToString().ToLowerInvariant()">@City.Danger danger</span></div>
             </div>
-            <div class="muted" style="font-size:.9rem">@City.Country · <span class="danger-@City.Danger.ToString().ToLowerInvariant()">@City.Danger danger</span></div>
         </div>
         <div style="text-align:right">
-            <div class="eyebrow">Day</div>
-            <div class="display status-day mt-1" style="font-size:1.25rem">Day @State.Day / @TotalDays</div>
-            <div class="@(DaysLeft <= 3 ? "negative" : "muted")" style="font-size:.9rem">
+            <div class="display status-day" style="font-size:1.1rem;line-height:1.1">Day @State.Day / @TotalDays</div>
+            <div class="@(DaysLeft <= 3 ? "negative" : "muted")" style="font-size:.8rem">
                 @(DaysLeft == 0 ? "Last day!" : $"{DaysLeft} day{(DaysLeft == 1 ? "" : "s")} left")
             </div>
         </div>
     </div>
 
-    <div class="meter my-3 @(DaysLeft <= 3 ? "warn" : null)"><div style="width:@(State.Day * 100 / TotalDays)%"></div></div>
+    <div class="meter my-2 @(DaysLeft <= 3 ? "warn" : null)"><div style="width:@(State.Day * 100 / TotalDays)%"></div></div>
 
     <div class="d-flex justify-space-between gap-2">
         <div class="stat">
-            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Credits" Size="14" /> Cash</div>
-            <div class="money status-cash" style="font-size:1.1rem">@Money.Format(State.Cash)</div>
+            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Credits" Size="12" /> Cash</div>
+            <div class="money status-cash">@Money.Format(State.Cash)</div>
             @if (State.Bank > 0)
             {
-                <div class="muted status-bank" style="font-size:.8rem">+ @Money.Format(State.Bank) banked</div>
+                <div class="muted status-bank" style="font-size:.75rem">+ @Money.Format(State.Bank) banked</div>
             }
         </div>
         <div class="stat">
-            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Owed</div>
-            <div class="money status-debt @(State.TotalDebt > 0 ? "negative" : "positive")" style="font-size:1.1rem">@Money.Format(State.TotalDebt)</div>
+            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Heat" Size="12" /> Owed</div>
+            <div class="money status-debt @(State.TotalDebt > 0 ? "negative" : "positive")">@Money.Format(State.TotalDebt)</div>
             @if (State.Loans.Any(l => FinanceService.IsOverdue(l, State.Day)))
             {
-                <div class="negative status-overdue" style="font-size:.8rem">OVERDUE</div>
+                <div class="negative status-overdue" style="font-size:.75rem">OVERDUE</div>
             }
         </div>
         <div class="stat" style="text-align:right">
-            <div class="eyebrow d-flex align-center gap-1 justify-end"><NeonIcon Kind="NeonIconKind.Deals" Size="14" /> Case</div>
-            <div class="money status-space" style="font-size:1.1rem">@State.SpaceUsed / @State.Capacity</div>
+            <div class="eyebrow d-flex align-center gap-1 justify-end"><NeonIcon Kind="NeonIconKind.Deals" Size="12" /> Case</div>
+            <div class="money status-space">@State.SpaceUsed / @State.Capacity</div>
         </div>
     </div>
 
-    <div class="d-flex align-center gap-2 mt-3">
-        <span class="eyebrow" style="min-width:4.5rem">Health</span>
-        <div class="meter flex-grow-1 @(State.Health < 35 ? "warn" : null)"><div style="width:@(State.Health)%"></div></div>
-        <span class="money status-health @(State.Health < 35 ? "negative" : null)" style="min-width:2.5rem;text-align:right">@State.Health</span>
-    </div>
-    <div class="d-flex align-center gap-2 mt-2">
-        <span class="eyebrow" style="min-width:4.5rem">Heat</span>
-        <div class="meter warn flex-grow-1"><div style="width:@(Heat)%"></div></div>
-        <span class="money status-heat @(Heat >= 50 ? "negative" : null)" style="min-width:2.5rem;text-align:right">@Heat</span>
+    <div class="d-flex gap-3 mt-2">
+        <div class="d-flex align-center gap-2 flex-grow-1">
+            <span class="eyebrow">HP</span>
+            <div class="meter flex-grow-1 @(State.Health < 35 ? "warn" : null)"><div style="width:@(State.Health)%"></div></div>
+            <span class="money status-health @(State.Health < 35 ? "negative" : null)" style="font-size:.85rem">@State.Health</span>
+        </div>
+        <div class="d-flex align-center gap-2 flex-grow-1">
+            <span class="eyebrow">Heat</span>
+            <div class="meter warn flex-grow-1"><div style="width:@(Heat)%"></div></div>
+            <span class="money status-heat @(Heat >= 50 ? "negative" : null)" style="font-size:.85rem">@Heat</span>
+        </div>
     </div>
     @if (State.CrackdownIn(State.CityId) is { Known: true } crackdown)
     {
-        <div class="crackdown-badge mt-2 status-crackdown">🚨 Police crackdown here until day @crackdown.EndDay. Stops are far more likely.</div>
+        <div class="crackdown-badge mt-1 status-crackdown">🚨 Police crackdown here until day @crackdown.EndDay. Stops are far more likely.</div>
     }
 </div>
 
