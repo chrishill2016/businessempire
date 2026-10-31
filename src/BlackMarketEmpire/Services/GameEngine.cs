@@ -6,7 +6,7 @@ namespace BlackMarketEmpire.Services;
 /// All the game rules. Stateless: every method acts on the <see cref="GameState"/> it's given,
 /// which keeps it easy to test and to save/resume.
 /// </summary>
-public sealed class GameEngine(MarketService market, EventService events, GameRules rules)
+public sealed class GameEngine(MarketService market, EventService events, EncounterService encounters, GameRules rules)
 {
     public const string StartCityId = "london";
 
@@ -20,6 +20,7 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
             Cash = rules.StartingCash,
             Debt = rules.StartingDebt,
             Capacity = rules.Capacity,
+            Health = rules.MaxHealth,
         };
         events.SeedNewRun(state, rules);
         RefreshMarket(state);
@@ -60,7 +61,8 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
         state.Inventory[goodId] = held + quantity;
         state.Cash -= cost;
         Touch(state);
-        return Log(state, ActionResult.Ok($"Bought {quantity} × {good.Name} for £{cost:N0}."));
+        var bought = $"Bought {quantity} × {good.Name} for £{cost:N0}.";
+        return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, cost) ? $"{bought} {state.PendingEncounter!.Intro}" : bought));
     }
 
     public ActionResult Sell(GameState state, string goodId, int quantity)
@@ -88,7 +90,8 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
         }
         Touch(state);
         var outcome = profit >= 0 ? $"profit £{profit:N0}" : $"loss £{-profit:N0}";
-        return Log(state, ActionResult.Ok($"Sold {quantity} × {good.Name} for £{revenue:N0} ({outcome})."));
+        var sold = $"Sold {quantity} × {good.Name} for £{revenue:N0} ({outcome}).";
+        return Log(state, ActionResult.Ok(encounters.MaybeSting(state, rules, revenue) ? $"{sold} {state.PendingEncounter!.Intro}" : sold));
     }
 
     public ActionResult Travel(GameState state, string cityId)
@@ -107,7 +110,9 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
         var city = GameCatalog.City(cityId);
         var message = $"Day {state.Day}. Arrived in {city.Name} after {days} day{(days == 1 ? "" : "s")} on the road.";
         var intel = events.RevealCity(state, cityId).Select(DescribeReveal).ToList();
-        return Log(state, ActionResult.Ok(intel.Count == 0 ? message : $"{message} {string.Join(" ", intel)}"));
+        if (intel.Count > 0) message = $"{message} {string.Join(" ", intel)}";
+        if (encounters.MaybeStopOnArrival(state, rules, days)) message = $"{message} {state.PendingEncounter!.Intro}";
+        return Log(state, ActionResult.Ok(message));
     }
 
     /// <summary>Lie low for a day. On the final day this ends the run.</summary>
@@ -144,12 +149,66 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
     public ActionResult EndRun(GameState state)
     {
         if (state.IsOver) return ActionResult.Fail("This run is already over.");
-        state.IsOver = true;
-        Touch(state);
+        if (state.PendingEncounter is not null) return ActionResult.Fail("Deal with the police first.");
+        Finish(state, state.Day >= rules.TotalDays ? EndReason.Finished : EndReason.Retired);
         return Log(state, ActionResult.Ok($"Run over. Final net worth: {Money.Format(Score(state))}."));
     }
 
-    public long Score(GameState state) => state.Cash - state.Debt;
+    /// <summary>Cash minus debt. If you're killed your cash is lost, but the loan shark still counts the debt.</summary>
+    public long Score(GameState state) => state.EndReason == EndReason.Killed ? -state.Debt : state.Cash - state.Debt;
+
+    /// <summary>Make a choice in the current police encounter.</summary>
+    public ActionResult ResolveEncounter(GameState state, EncounterChoice choice)
+    {
+        if (state.IsOver) return ActionResult.Fail("This run is over. Start a new one.");
+        var enc = state.PendingEncounter;
+        if (enc is null) return ActionResult.Fail("Nobody's stopped you.");
+        if (choice == EncounterChoice.Bribe && state.Cash < enc.BribeCost)
+            return ActionResult.Fail($"You don't have {Money.Format(enc.BribeCost)} for a bribe.");
+
+        var outcome = encounters.Resolve(state, rules, choice);
+        var message = outcome.Message;
+
+        if (outcome.Damage > 0)
+        {
+            state.Health = Math.Max(0, state.Health - outcome.Damage);
+            state.Stats.DamageTaken += outcome.Damage;
+        }
+
+        if (state.Health <= 0)
+        {
+            state.PendingEncounter = null;
+            Finish(state, EndReason.Killed);
+            Touch(state);
+            return Log(state, ActionResult.Ok($"{message} You didn't survive. Your run is over."));
+        }
+
+        if (!outcome.Ended)
+        {
+            enc.LastOutcome = message;
+            Touch(state);
+            return Log(state, ActionResult.Ok(message));
+        }
+
+        state.PendingEncounter = null;
+        if (outcome.JailDays > 0)
+        {
+            var days = Math.Min(outcome.JailDays, rules.TotalDays - state.Day);
+            AdvanceDays(state, days, inTransit: true);
+            state.Stats.DaysInJail += days;
+            RefreshMarket(state);
+            message = $"{message} Released on day {state.Day}.";
+        }
+        Touch(state);
+        return Log(state, ActionResult.Ok(message));
+    }
+
+    private void Finish(GameState state, EndReason reason)
+    {
+        state.IsOver = true;
+        state.EndReason = reason;
+        Touch(state);
+    }
 
     /// <summary>The active price shock for a good in the current city, if any.</summary>
     public MarketEvent? EventHere(GameState state, string goodId) => EventService.ActiveEvent(state, state.CityId, goodId);
@@ -166,6 +225,7 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
             {
                 state.Debt = (long)Math.Ceiling(state.Debt * (1 + rules.DailyInterest));
             }
+            state.Health = Math.Min(rules.MaxHealth, state.Health + rules.HealthPerDay);
             events.OnNewDay(state, rules, inTransit);
         }
     }
@@ -184,7 +244,9 @@ public sealed class GameEngine(MarketService market, EventService events, GameRu
     }
 
     private static ActionResult? Guard(GameState state) =>
-        state.IsOver ? ActionResult.Fail("This run is over. Start a new one.") : null;
+        state.IsOver ? ActionResult.Fail("This run is over. Start a new one.")
+        : state.PendingEncounter is not null ? ActionResult.Fail("Deal with the police first.")
+        : null;
 
     private static void Touch(GameState state) => state.LastModified = DateTime.UtcNow;
 

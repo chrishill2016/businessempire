@@ -1,0 +1,63 @@
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <NeonIcon Kind="NeonIconKind.Heat" Size="24" />
+            <span class="display negative">@Title</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="encounter-intro">@Encounter.Intro</div>
+        @if (Encounter.LastOutcome is { } last)
+        {
+            <div class="panel pa-3 mt-3 encounter-last" style="border-color:var(--bme-magenta)">@last</div>
+        }
+
+        <div class="d-flex align-center gap-2 mt-3">
+            <span class="eyebrow" style="min-width:4.5rem">Health</span>
+            <div class="meter flex-grow-1 @(State.Health < 35 ? "warn" : null)"><div style="width:@(State.Health)%"></div></div>
+            <span class="money">@State.Health</span>
+        </div>
+        <div class="muted mt-1" style="font-size:.9rem">
+            Carrying @State.UnitsHeld items (@Money.Format(EncounterService.CargoValue(State))) · Cash @Money.Format(State.Cash)
+        </div>
+
+        <div class="encounter-choices mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="@(() => Choose(EncounterChoice.Run))" data-choice="run">
+                Run · @Pct(EncounterService.RunChance(State, Rules, Encounter.Kind))
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Disabled="@(State.Cash < Encounter.BribeCost)"
+                       OnClick="@(() => Choose(EncounterChoice.Bribe))" data-choice="bribe">
+                Bribe @Money.Format(Encounter.BribeCost) · @Pct(EncounterService.BribeChance(Rules, Encounter.Kind))
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth="true" OnClick="@(() => Choose(EncounterChoice.Fight))" data-choice="fight">
+                Fight · @Pct(EncounterService.FightChance(Rules, Encounter.Kind))
+            </MudButton>
+            <MudButton Variant="Variant.Text" FullWidth="true" OnClick="@(() => Choose(EncounterChoice.Surrender))" data-choice="surrender">
+                Surrender
+            </MudButton>
+        </div>
+        <div class="muted mt-2" style="font-size:.85rem">
+            Fail a run and you get hurt. A refused bribe or a lost fight means arrest.
+            Arrest = lose all goods, @((int)(Rules.ArrestFine * 100))% fine, @(Encounter.Kind == EncounterKind.Police ? "1–3" : "2–4") days in jail.
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public GameState State { get; set; } = default!;
+    [Parameter] public GameRules Rules { get; set; } = GameRules.Default;
+
+    private Encounter Encounter => State.PendingEncounter!;
+
+    private string Title => Encounter.Kind switch
+    {
+        EncounterKind.Customs => "CUSTOMS CHECK",
+        EncounterKind.Undercover => "IT'S A STING",
+        _ => "POLICE STOP",
+    };
+
+    private static string Pct(double chance) => $"{Math.Round(chance * 100)}%";
+
+    private void Choose(EncounterChoice choice) => Dialog.Close(DialogResult.Ok(choice));
+}

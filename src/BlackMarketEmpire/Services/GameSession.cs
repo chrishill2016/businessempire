@@ -36,6 +36,7 @@ public sealed class GameSession(GameEngine engine, ILocalStore store, HighScoreS
     public Task<ActionResult> WaitAsync() => ApplyAsync(engine.Wait);
     public Task<ActionResult> RepayAsync(long amount) => ApplyAsync(s => engine.RepayDebt(s, amount));
     public Task<ActionResult> EndRunAsync() => ApplyAsync(engine.EndRun);
+    public Task<ActionResult> ResolveEncounterAsync(EncounterChoice choice) => ApplyAsync(s => engine.ResolveEncounter(s, choice));
 
     private async Task<ActionResult> ApplyAsync(Func<GameState, ActionResult> action)
     {
@@ -48,7 +49,8 @@ public sealed class GameSession(GameEngine engine, ILocalStore store, HighScoreS
             if (!wasOver && State.IsOver)
             {
                 FinalRank = await highScores.AddAsync(new HighScore(
-                    State.RunId, engine.Score(State), DateTime.UtcNow, GameCatalog.City(State.CityId).Name));
+                    State.RunId, engine.Score(State), DateTime.UtcNow, GameCatalog.City(State.CityId).Name,
+                    State.EndReason, State.StartedUtc));
             }
             await SaveAsync();
             Changed?.Invoke();

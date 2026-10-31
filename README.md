@@ -14,6 +14,7 @@ When the 30 days are up, your score is **cash minus debt**. Your top 10 scores a
 - Travelling takes 1–3 days. Your £5,000 debt grows 5% every day until you pay it back.
 - Your suitcase holds 100 items. Anything still unsold when the run ends is worthless.
 - **Market events:** the intel feed reports price spikes and crashes in other cities. They only last a few days, and about a quarter of the rumours are false. You only find out by going there.
+- **Police and customs:** the more you carry, the more likely you are to be stopped. You can run, bribe, fight or surrender. Get arrested and you lose your goods, pay a fine and spend days in jail. Get hurt too badly and you're dead.
 - Your run saves after every move, so you can close the app and carry on later.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log.
@@ -28,7 +29,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log
 ```
 src/BlackMarketEmpire/
   Features/        Home, Game (market, travel, dialogs, game over), Scores
-  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), GameSession, HighScoreService, IndexedDbStore
+  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), EncounterService (police), GameSession, HighScoreService, IndexedDbStore
   Models/          GameState, Good, City, GameRules, HighScore
   wwwroot/         index.html, service worker, manifest, icons, js interop
 tests/BlackMarketEmpire.Tests/

@@ -15,7 +15,7 @@ else
                 <tr class="@(s.RunId == Highlight ? "score-me" : null)">
                     <td>@(i + 1)</td>
                     <td class="money @(s.Score < 0 ? "negative" : "positive")">@Money.Format(s.Score)</td>
-                    <td>@s.FinalCity</td>
+                    <td>@s.FinalCity@(s.Reason == EndReason.Killed ? " ☠" : null)</td>
                     <td>@s.AchievedUtc.ToLocalTime().ToString("d MMM yy")</td>
                 </tr>
             }

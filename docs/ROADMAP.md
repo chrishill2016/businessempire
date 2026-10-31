@@ -22,14 +22,20 @@ Each phase ships as its own pull request into `main`.
 - [x] SPIKE / CRASH badges on affected goods in the market
 - [ ] Ideas for later: paid informants who tell you which rumours are true, events that hit a whole region, "insider tip" events with bigger multipliers
 
-## Phase 3 — Danger: police & customs
-- [ ] Random encounters while travelling or trading
-- [ ] Choices: run, bribe, fight, surrender
-- [ ] Health; injuries; death ends the run
-- [ ] Losing goods/cash when caught; jail time costs days
-- [ ] End-of-run consequences message (the real-world message: crime doesn't pay)
+## Phase 3 — Danger: police & customs ✅
+- [x] Stopped on arrival when carrying goods; the more (and the more valuable) you carry, the likelier it is
+- [x] Street police on short trips, stricter customs after long-haul (2+ day) trips
+- [x] Undercover stings on big deals (£10k+)
+- [x] Choices: run, bribe, fight, surrender, with the odds shown
+- [x] Health (100), recovers 3 a day; failed runs and fights hurt; death ends the run and your cash dies with you
+- [x] Arrest: all goods seized, 20% fine, 1–4 days in jail (debt keeps growing)
+- [x] Rap sheet and a short reality check on the game-over screen; ☠ marks deaths in high scores
+- [ ] Later: gangs/muggers as well as police, hospital visits to heal faster, lawyers to cut jail time
 
 ## Phase 4 — Smuggling logistics
+- [ ] **Travel costs money** — every trip has a ticket/fuel price based on distance and travel method, so moving isn't free
+  - Prices vary by method (bus cheapest, flights dearest) and can spike with events (strikes, fuel crisis)
+  - Can't travel if you can't afford the fare — plan your cash before you sell out
 - [ ] **Travel methods** with different time / cost / risk:
   - Bus/train — cheap, slow, moderate checks
   - Car — medium, random roadblocks

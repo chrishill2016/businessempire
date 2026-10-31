@@ -15,9 +15,9 @@
     {
         var score = Session.Engine.Score(_state);
         <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mt-4">
-            <div class="eyebrow">Run over</div>
+            <div class="display @(_state.EndReason == EndReason.Killed ? "negative" : null) end-reason" style="font-size:1.3rem;text-align:center">@Headline(_state)</div>
             <div class="panel pa-5" style="width:100%;text-align:center">
-                <div class="eyebrow mb-1">Final net worth</div>
+                <div class="eyebrow mb-1">@(_state.EndReason == EndReason.Killed ? "Your cash died with you · debt remains" : "Final net worth")</div>
                 <div class="money @(score < 0 ? "negative" : "positive")" style="font-size:2.4rem;text-shadow:0 0 14px currentColor">@Money.Format(score)</div>
                 <div class="muted mt-2">
                     Cash @Money.Format(_state.Cash) · Debt @Money.Format(_state.Debt) · Day @_state.Day in @GameCatalog.City(_state.CityId).Name
@@ -33,6 +33,7 @@
             {
                 <MudText Typo="Typo.caption" Class="negative">You finished with @_state.UnitsHeld unsold items — they're worth nothing now.</MudText>
             }
+            <div style="width:100%"><RapSheet Stats="_state.Stats" Reason="_state.EndReason" /></div>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="PlayAgain" Class="mt-2" Style="height:56px">
                 Play again
             </MudButton>
@@ -56,6 +57,13 @@
         _state = Session.State is { IsOver: true } s ? s : null;
         _scores = await HighScores.GetTopAsync();
     }
+
+    private static string Headline(GameState state) => state.EndReason switch
+    {
+        EndReason.Killed => "YOU WERE KILLED",
+        EndReason.Retired => "YOU RETIRED EARLY",
+        _ => "30 DAYS ARE UP",
+    };
 
     private async Task PlayAgain()
     {

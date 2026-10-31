@@ -56,6 +56,28 @@ public class GameSessionTests
         var scores = await _highScores.GetTopAsync();
         Assert.Single(scores);
         Assert.Equal(-2_500, scores[0].Score);
+        Assert.Equal(EndReason.Retired, scores[0].Reason);
+        Assert.Equal(session.State!.StartedUtc, scores[0].StartedUtc);
+    }
+
+    [Fact]
+    public async Task Encounter_and_health_survive_an_app_restart()
+    {
+        var first = NewSession();
+        await first.StartNewAsync();
+        first.State!.Health = 42;
+        first.State.Stats.Stops = 1;
+        first.State.PendingEncounter = new Encounter { Kind = EncounterKind.Customs, BribeCost = 650, Intro = "Customs!", Round = 1 };
+        await _store.SetAsync(GameSession.StorageKey, first.State); // as saved after the stop
+
+        var second = NewSession();
+        await second.LoadAsync();
+
+        Assert.Equal(42, second.State!.Health);
+        Assert.Equal(1, second.State.Stats.Stops);
+        Assert.Equal(EncounterKind.Customs, second.State.PendingEncounter?.Kind);
+        Assert.Equal(650, second.State.PendingEncounter?.BribeCost);
+        Assert.False((await second.WaitAsync()).Success); // still has to deal with it
     }
 
     [Fact]
