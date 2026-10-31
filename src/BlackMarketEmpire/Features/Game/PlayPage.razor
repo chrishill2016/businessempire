@@ -33,14 +33,25 @@
             <MarketList State="state" Disabled="_busy" OnTrade="OpenTrade" />
         </div>
 
-        <MudStack Row="true" Spacing="2" Class="mt-3" Wrap="Wrap.Wrap">
+        <div class="action-grid mt-3">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Flight"
-                       Disabled="@(_busy || lastDay)" OnClick="OpenTravel" Class="flex-grow-1">Travel</MudButton>
+                       Disabled="@(_busy || lastDay)" OnClick="OpenTravel">Travel</MudButton>
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@(lastDay ? Icons.Material.Filled.Flag : Icons.Material.Filled.Bedtime)"
-                       Disabled="_busy" OnClick="WaitOrEnd" Class="flex-grow-1">@(lastDay ? "End run" : "Wait a day")</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Payments"
-                       Disabled="@(_busy || state.Debt == 0 || state.Cash == 0)" OnClick="OpenRepay" Class="flex-grow-1">Repay debt</MudButton>
-        </MudStack>
+                       Disabled="_busy" OnClick="WaitOrEnd">@(lastDay ? "End run" : "Wait a day")</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Backpack"
+                       Disabled="_busy" OnClick="OpenGear">Gear</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.LocalShipping"
+                       Disabled="@(_busy || state.Inventory.Count == 0 || lastDay)" OnClick="OpenShip">Ship</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Payments" Class="wide"
+                       Disabled="@(_busy || state.Debt == 0 || state.Cash == 0)" OnClick="OpenRepay">Repay debt</MudButton>
+        </div>
+
+        @if (state.Shipments.Count > 0)
+        {
+            <div class="mt-3">
+                <DeliveriesPanel State="state" Disabled="_busy" OnCollect="@(() => Run(Session.CollectAsync))" />
+            </div>
+        }
 
         <div class="mt-3" id="intel">
             <NewsFeed Items="state.News" />
@@ -138,18 +149,46 @@
 
     private async Task OpenTravel()
     {
-        var state = Session.State!;
         var parameters = new DialogParameters<TravelDialog>
         {
-            { d => d.CurrentCityId, state.CityId },
-            { d => d.DaysLeft, Session.Engine.DaysLeft(state) },
-            { d => d.News, state.News },
+            { d => d.State, Session.State! },
+            { d => d.Engine, Session.Engine },
         };
         var dialog = await Dialogs.ShowAsync<TravelDialog>(null, parameters);
         var result = await dialog.Result;
-        if (result is { Canceled: false, Data: string cityId })
+        if (result is { Canceled: false, Data: TravelChoice choice })
         {
-            await Run(() => Session.TravelAsync(cityId));
+            await Run(() => Session.TravelAsync(choice.CityId, choice.Method));
+        }
+    }
+
+    private async Task OpenGear()
+    {
+        var parameters = new DialogParameters<GearDialog>
+        {
+            { d => d.State, Session.State! },
+            { d => d.Rules, Session.Engine.Rules },
+        };
+        var dialog = await Dialogs.ShowAsync<GearDialog>(null, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: GearAction action })
+        {
+            await Run(() => action.Use ? Session.UseFirstAidAsync() : Session.BuyGearAsync(action.GearId));
+        }
+    }
+
+    private async Task OpenShip()
+    {
+        var parameters = new DialogParameters<ShipDialog>
+        {
+            { d => d.State, Session.State! },
+            { d => d.Engine, Session.Engine },
+        };
+        var dialog = await Dialogs.ShowAsync<ShipDialog>(null, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: ShipOrder order })
+        {
+            await Run(() => Session.ShipAsync(order.GoodId, order.Quantity, order.ToCityId, order.CourierId));
         }
     }
 

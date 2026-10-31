@@ -1,0 +1,99 @@
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Goods" Size="22" /><span class="display">SEND WITH A COURIER</span></div>
+    </TitleContent>
+    <DialogContent>
+        <div class="muted" style="font-size:.9rem">
+            The courier carries the risk, not you, but parcels can be seized or stolen. Pick up delivered goods when you're in that city.
+        </div>
+        @if (State.Inventory.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-3">You've nothing to send. Buy something first.</MudAlert>
+        }
+        else
+        {
+            <MudSelect T="string" @bind-Value="_goodId" Label="What" Variant="Variant.Outlined" Class="mt-3" Dense="true"
+                       @bind-Value:after="OnGoodChanged">
+                @foreach (var (id, qty) in State.Inventory)
+                {
+                    var g = GameCatalog.Good(id);
+                    <MudSelectItem Value="@id">@g.Icon @g.Name (@qty)</MudSelectItem>
+                }
+            </MudSelect>
+            <div class="d-flex align-center gap-2 mt-2">
+                <MudNumericField T="int" @bind-Value="_quantity" Min="1" Max="Held" Label="How many" Variant="Variant.Outlined"
+                                 Immediate="true" Class="flex-grow-1" InputMode="InputMode.numeric" />
+                <MudButton Variant="Variant.Outlined" OnClick="@(() => _quantity = Held)">All</MudButton>
+            </div>
+            <MudSelect T="string" @bind-Value="_toCityId" Label="To" Variant="Variant.Outlined" Class="mt-2" Dense="true">
+                @foreach (var c in GameCatalog.Cities.Where(c => c.Id != State.CityId))
+                {
+                    <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <div class="courier-options mt-3">
+                @foreach (var courier in GameCatalog.Couriers)
+                {
+                    var q = Quote(courier.Id);
+                    <button type="button" class="travel-option @(_courierId == courier.Id ? "selected" : null)" data-courier="@courier.Id"
+                            @onclick="@(() => _courierId = courier.Id)">
+                        <span class="to-top">@courier.Name</span>
+                        <span class="to-mid">@Money.Format(q.Fee) · arrives day @q.ArrivalDay</span>
+                        <span class="to-risk muted">@courier.Description</span>
+                        <span class="to-risk @(courier.SeizureChance + courier.TheftChance >= 0.15 ? "negative" : "warnish")">
+                            @Math.Round((courier.SeizureChance + courier.TheftChance) * 100)% chance it's lost
+                        </span>
+                    </button>
+                }
+            </div>
+            @if (Problem is { } problem)
+            {
+                <div class="negative mt-2" style="font-size:.9rem">@problem</div>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(Problem is not null)" OnClick="Submit">Send</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public GameState State { get; set; } = default!;
+    [Parameter] public GameEngine Engine { get; set; } = default!;
+
+    private string _goodId = "";
+    private int _quantity;
+    private string _toCityId = "";
+    private string _courierId = "pro";
+
+    private int Held => State.Inventory.GetValueOrDefault(_goodId);
+
+    protected override void OnInitialized()
+    {
+        _goodId = State.Inventory.Keys.FirstOrDefault() ?? "";
+        _quantity = Held;
+        _toCityId = GameCatalog.Cities.First(c => c.Id != State.CityId).Id;
+    }
+
+    private void OnGoodChanged() => _quantity = Held;
+
+    private ShippingQuote Quote(string courierId) =>
+        Engine.QuoteShipping(State, _goodId, Math.Clamp(_quantity, 1, Math.Max(1, Held)), _toCityId, courierId);
+
+    private string? Problem
+    {
+        get
+        {
+            if (State.Inventory.Count == 0) return "Nothing to send.";
+            var q = Quote(_courierId);
+            if (q.ArrivalDay > Engine.Rules.TotalDays) return "It wouldn't arrive before your 30 days are up.";
+            if (q.Fee > State.Cash) return $"You need {Money.Format(q.Fee)} for the courier.";
+            return null;
+        }
+    }
+
+    private void Submit() =>
+        Dialog.Close(DialogResult.Ok(new ShipOrder(_goodId, Math.Clamp(_quantity, 1, Held), _toCityId, _courierId)));
+}

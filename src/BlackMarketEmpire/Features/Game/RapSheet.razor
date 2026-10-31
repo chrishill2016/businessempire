@@ -11,6 +11,9 @@
         <span>Bribes paid</span><span class="v">@Money.Format(Stats.BribesPaid)</span>
         <span>Fines paid</span><span class="v">@Money.Format(Stats.FinesPaid)</span>
         <span>Goods seized</span><span class="v">@Stats.GoodsSeized (@Money.Format(Stats.GoodsSeizedValue))</span>
+        <span>Fares paid</span><span class="v">@Money.Format(Stats.FaresPaid)</span>
+        <span>Courier fees</span><span class="v">@Money.Format(Stats.CourierFeesPaid)</span>
+        <span>Shipments lost</span><span class="v @(Stats.ShipmentsLost > 0 ? "negative" : null)">@Stats.ShipmentsLost</span>
         <span>Damage taken</span><span class="v @(Stats.DamageTaken > 0 ? "negative" : null)">@Stats.DamageTaken</span>
     </div>
     <div class="mt-4 reality-check" style="color:var(--bme-text-2);line-height:1.4">@RealityCheck(Reason, Stats)</div>

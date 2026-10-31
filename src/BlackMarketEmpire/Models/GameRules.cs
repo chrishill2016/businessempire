@@ -37,9 +37,7 @@ public sealed record GameRules
     public double StopChancePerUnit { get; init; } = 0.0015;
     /// <summary>Extra stop chance per £10,000 of cargo (valued at what you paid).</summary>
     public double StopChancePer10k { get; init; } = 0.02;
-    public double MaxStopChance { get; init; } = 0.45;
-    /// <summary>Trips this long or longer are flights, so you meet customs instead of street police.</summary>
-    public int CustomsTripDays { get; init; } = 2;
+    public double MaxStopChance { get; init; } = 0.6;
     /// <summary>Chance a single buy/sell worth at least <see cref="BigDealValue"/> is an undercover sting.</summary>
     public double StingChance { get; init; } = 0.06;
     public long BigDealValue { get; init; } = 10_000;
@@ -54,6 +52,29 @@ public sealed record GameRules
     public long MinBribe { get; init; } = 300;
     /// <summary>Fine on arrest, as a share of your cash.</summary>
     public double ArrestFine { get; init; } = 0.2;
+
+    // ----- Travel (Phase 4) -----
+    /// <summary>Fare per day of the overland journey, by method.</summary>
+    public long TrainFarePerDay { get; init; } = 40;
+    public long CarFarePerDay { get; init; } = 90;
+    public long FlightFarePerDay { get; init; } = 220;
+    public long BoatFarePerDay { get; init; } = 60;
+    /// <summary>How likely each method is to get you stopped, relative to the base chance.</summary>
+    public double TrainStopFactor { get; init; } = 1.0;
+    public double CarStopFactor { get; init; } = 0.8;
+    public double FlightStopFactor { get; init; } = 1.6;
+    public double BoatStopFactor { get; init; } = 0.6;
+    /// <summary>Extra chance to outrun police when you arrived by car.</summary>
+    public double CarRunBonus { get; init; } = 0.15;
+
+    // ----- Heat (Phase 4) -----
+    public int HeatCoolPerDay { get; init; } = 5;
+    public int HeatOnStop { get; init; } = 5;
+    public int HeatOnEscape { get; init; } = 15;
+    public int HeatOnArrest { get; init; } = 30;
+    public int HeatOnBigDeal { get; init; } = 8;
+    /// <summary>Extra stop chance at 100 heat (scales linearly).</summary>
+    public double StopChanceAtMaxHeat { get; init; } = 0.25;
 
     public static GameRules Default { get; } = new();
 }

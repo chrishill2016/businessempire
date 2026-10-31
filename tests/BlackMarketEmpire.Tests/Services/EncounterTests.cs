@@ -22,30 +22,31 @@ public class EncounterServiceTests
         var state = Loaded(units: 0);
         state.Inventory.Clear();
 
-        Assert.Equal(0, EncounterService.StopChance(state, GameRules.Default));
-        Assert.False(new EncounterService(new ScriptedRandom(0)).MaybeStopOnArrival(state, GameRules.Default, 1));
+        Assert.Equal(0, EncounterService.StopChance(state, GameRules.Default, TravelMethod.Flight, "dubai"));
+        Assert.False(new EncounterService(new ScriptedRandom(0)).MaybeStopOnArrival(state, GameRules.Default, TravelMethod.Flight));
     }
 
     [Fact]
     public void Stop_chance_grows_with_cargo_and_is_capped()
     {
         var rules = GameRules.Default;
-        var light = EncounterService.StopChance(Loaded(units: 5, avgCost: 20), rules);
-        var heavy = EncounterService.StopChance(Loaded(units: 100, avgCost: 2_000), rules);
+        var light = EncounterService.StopChance(Loaded(units: 5, avgCost: 20), rules, TravelMethod.Train, "dubai");
+        var heavy = EncounterService.StopChance(Loaded(units: 100, avgCost: 2_000), rules, TravelMethod.Train, "dubai");
 
         Assert.True(heavy > light);
         Assert.Equal(rules.MaxStopChance, heavy);
     }
 
     [Theory]
-    [InlineData(1, EncounterKind.Police)]
-    [InlineData(2, EncounterKind.Customs)]
-    [InlineData(3, EncounterKind.Customs)]
-    public void Long_trips_meet_customs(int tripDays, EncounterKind expected)
+    [InlineData(TravelMethod.Train, EncounterKind.Police)]
+    [InlineData(TravelMethod.Car, EncounterKind.Police)]
+    [InlineData(TravelMethod.Flight, EncounterKind.Customs)]
+    [InlineData(TravelMethod.Boat, EncounterKind.Customs)]
+    public void Flights_and_boats_meet_customs(TravelMethod method, EncounterKind expected)
     {
         var state = Loaded();
 
-        Assert.True(new EncounterService(new ScriptedRandom(0)).MaybeStopOnArrival(state, GameRules.Default, tripDays));
+        Assert.True(new EncounterService(new ScriptedRandom(0)).MaybeStopOnArrival(state, GameRules.Default, method));
         Assert.Equal(expected, state.PendingEncounter!.Kind);
         Assert.Equal(1, state.Stats.Stops);
     }
@@ -54,7 +55,7 @@ public class EncounterServiceTests
     public void Bribe_is_at_least_the_minimum_and_rounded_to_50()
     {
         var state = Loaded(units: 1, avgCost: 10, cash: 100);
-        new EncounterService(new ScriptedRandom(0)).MaybeStopOnArrival(state, GameRules.Default, 1);
+        new EncounterService(new ScriptedRandom(0)).MaybeStopOnArrival(state, GameRules.Default, TravelMethod.Train);
 
         Assert.Equal(GameRules.Default.MinBribe, state.PendingEncounter!.BribeCost);
         Assert.Equal(0, state.PendingEncounter.BribeCost % 50);
@@ -78,7 +79,7 @@ public class GameEngineEncounterTests
     {
         var random = new SystemRandomSource(new Random(1));
         return new GameEngine(new MarketService(random), new EventService(random),
-            new EncounterService(new ScriptedRandom(encounterRolls)), TestGame.AllAvailable);
+            new EncounterService(new ScriptedRandom(encounterRolls)), new ShippingService(random), TestGame.AllAvailable);
     }
 
     private static GameState Stopped(GameEngine engine, EncounterKind kind = EncounterKind.Police, int units = 20)
@@ -248,12 +249,12 @@ public class GameEngineEncounterTests
     {
         var random = new SystemRandomSource(new Random(1));
         var rules = TestGame.AllAvailable with { MaxStopChance = 1, BaseStopChance = 1 };
-        var engine = new GameEngine(new MarketService(random), new EventService(random), new EncounterService(random), rules);
+        var engine = new GameEngine(new MarketService(random), new EventService(random), new EncounterService(random), new ShippingService(random), rules);
         var state = engine.NewGame();
         state.Inventory["cigs"] = 1;
         state.AverageCost["cigs"] = 10;
 
-        var result = engine.Travel(state, "istanbul");
+        var result = engine.Travel(state, "istanbul", TravelMethod.Flight);
 
         Assert.Equal(EncounterKind.Customs, state.PendingEncounter?.Kind);
         Assert.Contains("Customs", result.Message);

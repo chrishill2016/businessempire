@@ -150,12 +150,12 @@ public class GameEngineTests
     public void Travel_that_would_overrun_the_last_day_is_refused()
     {
         var state = _engine.NewGame();
-        state.Day = 28;
+        state.Day = 29;
 
-        var result = _engine.Travel(state, "hongkong"); // 3 days
+        var result = _engine.Travel(state, "hongkong"); // fastest is a 2-day flight
 
         Assert.False(result.Success);
-        Assert.Equal(28, state.Day);
+        Assert.Equal(29, state.Day);
         Assert.Equal("london", state.CityId);
     }
 

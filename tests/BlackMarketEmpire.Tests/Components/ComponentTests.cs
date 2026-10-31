@@ -193,3 +193,47 @@ public class EncounterComponentTests : BunitContext
         Assert.Contains("negative", cut.Find(".status-health").ClassName);
     }
 }
+
+public class LogisticsComponentTests : BunitContext
+{
+    public LogisticsComponentTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+    }
+
+    [Fact]
+    public void DeliveriesPanel_hidden_with_no_shipments()
+    {
+        var cut = Render<DeliveriesPanel>(p => p.Add(c => c.State, new GameState { CityId = "london" }));
+
+        Assert.Empty(cut.Markup.Trim());
+    }
+
+    [Fact]
+    public void DeliveriesPanel_offers_collect_when_goods_are_here()
+    {
+        var state = new GameState { CityId = "london" };
+        state.Shipments.Add(new Shipment { GoodId = "cigs", Quantity = 7, ToCityId = "london", Status = ShipmentStatus.Delivered });
+        state.Shipments.Add(new Shipment { GoodId = "art", Quantity = 1, ToCityId = "dubai", Status = ShipmentStatus.InTransit, ArrivalDay = 9 });
+        var collected = false;
+
+        var cut = Render<DeliveriesPanel>(p => p.Add(c => c.State, state).Add(c => c.OnCollect, () => collected = true));
+        cut.FindAll("button").Single(b => b.TextContent.Contains("Collect 7")).Click();
+
+        Assert.True(collected);
+        Assert.Contains("due day 9", cut.Markup);
+    }
+
+    [Fact]
+    public void StatusPanel_shows_heat_for_current_city()
+    {
+        var state = TestGame.Engine().NewGame();
+        state.Heat["london"] = 60;
+        state.Heat["dubai"] = 10;
+
+        var cut = Render<StatusPanel>(p => p.Add(c => c.State, state).Add(c => c.TotalDays, 30));
+
+        Assert.Equal("60", cut.Find(".status-heat").TextContent);
+    }
+}

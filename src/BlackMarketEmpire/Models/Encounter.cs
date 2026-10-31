@@ -48,4 +48,7 @@ public sealed class RunStats
     public int GoodsSeized { get; set; }
     public long GoodsSeizedValue { get; set; }
     public int DamageTaken { get; set; }
+    public long FaresPaid { get; set; }
+    public long CourierFeesPaid { get; set; }
+    public int ShipmentsLost { get; set; }
 }

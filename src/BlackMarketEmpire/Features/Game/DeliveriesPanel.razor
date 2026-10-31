@@ -1,0 +1,53 @@
+@if (Shipments.Count > 0)
+{
+    <div class="panel pa-4">
+        <div class="d-flex align-center justify-space-between mb-2">
+            <div class="d-flex align-center gap-2">
+                <NeonIcon Kind="NeonIconKind.Goods" Size="18" />
+                <span class="eyebrow">Shipments</span>
+            </div>
+            @if (WaitingHere > 0)
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="Disabled" OnClick="OnCollect">
+                    Collect @WaitingHere
+                </MudButton>
+            }
+        </div>
+        @foreach (var s in Shipments)
+        {
+            var good = GameCatalog.Good(s.GoodId);
+            var city = GameCatalog.City(s.ToCityId).Name;
+            <div class="shipment-row d-flex justify-space-between gap-2" data-shipment="@s.Status">
+                <span>@good.Icon @s.Quantity × @good.Name → @city</span>
+                <span class="@StatusClass(s)" style="white-space:nowrap">@StatusText(s)</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public GameState State { get; set; } = default!;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback OnCollect { get; set; }
+
+    private IReadOnlyList<Shipment> Shipments => State.Shipments;
+
+    private int WaitingHere => State.Shipments
+        .Where(s => s.Status == ShipmentStatus.Delivered && s.ToCityId == State.CityId)
+        .Sum(s => s.Quantity);
+
+    private string StatusText(Shipment s) => s.Status switch
+    {
+        ShipmentStatus.InTransit => $"due day {s.ArrivalDay}",
+        ShipmentStatus.Delivered => s.ToCityId == State.CityId ? "here — collect" : "waiting",
+        ShipmentStatus.Seized => "seized",
+        _ => "stolen",
+    };
+
+    private static string StatusClass(Shipment s) => s.Status switch
+    {
+        ShipmentStatus.Delivered => "positive",
+        ShipmentStatus.InTransit => "muted",
+        _ => "negative",
+    };
+}

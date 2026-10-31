@@ -1,0 +1,49 @@
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Vault" Size="22" /><span class="display">GEAR</span></div>
+    </TitleContent>
+    <DialogContent>
+        <div class="muted" style="font-size:.9rem">Cash @Money.Format(State.Cash). Gear lasts the whole run, unless the police take it.</div>
+        @foreach (var item in GameCatalog.Gear)
+        {
+            var owned = State.Gear.GetValueOrDefault(item.Id);
+            var canBuy = (item.Consumable || owned == 0) && State.Cash >= item.Price;
+            <div class="gear-row d-flex align-center gap-3 py-2" data-gear="@item.Id">
+                <div style="font-size:1.5rem;width:2rem;text-align:center">@item.Icon</div>
+                <div class="flex-grow-1" style="min-width:0">
+                    <div style="font-weight:700">
+                        @item.Name
+                        @if (owned > 0)
+                        {
+                            <span class="event-badge spike">@(item.Consumable ? $"× {owned}" : "OWNED")</span>
+                        }
+                    </div>
+                    <div class="muted" style="font-size:.85rem;line-height:1.3">@item.Description</div>
+                </div>
+                <div class="d-flex flex-column align-end gap-1">
+                    <span class="money" style="font-size:.9rem">@Money.Format(item.Price)</span>
+                    @if (item.Id == "firstaid" && owned > 0)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary"
+                                   Disabled="@(State.Health >= Rules.MaxHealth)"
+                                   OnClick="@(() => Dialog.Close(DialogResult.Ok(new GearAction(item.Id, Use: true))))">Use</MudButton>
+                    }
+                    @if (item.Consumable || owned == 0)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!canBuy)"
+                                   OnClick="@(() => Dialog.Close(DialogResult.Ok(new GearAction(item.Id, Use: false))))">Buy</MudButton>
+                    }
+                </div>
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public GameState State { get; set; } = default!;
+    [Parameter] public GameRules Rules { get; set; } = GameRules.Default;
+}

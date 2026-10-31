@@ -39,6 +39,11 @@
         <div class="meter flex-grow-1 @(State.Health < 35 ? "warn" : null)"><div style="width:@(State.Health)%"></div></div>
         <span class="money status-health @(State.Health < 35 ? "negative" : null)" style="min-width:2.5rem;text-align:right">@State.Health</span>
     </div>
+    <div class="d-flex align-center gap-2 mt-2">
+        <span class="eyebrow" style="min-width:4.5rem">Heat</span>
+        <div class="meter warn flex-grow-1"><div style="width:@(Heat)%"></div></div>
+        <span class="money status-heat @(Heat >= 50 ? "negative" : null)" style="min-width:2.5rem;text-align:right">@Heat</span>
+    </div>
 </div>
 
 @code {
@@ -47,4 +52,5 @@
 
     private City City => GameCatalog.City(State.CityId);
     private int DaysLeft => TotalDays - State.Day;
+    private int Heat => State.HeatIn(State.CityId);
 }

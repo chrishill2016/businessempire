@@ -32,7 +32,12 @@ public sealed class GameSession(GameEngine engine, ILocalStore store, HighScoreS
 
     public Task<ActionResult> BuyAsync(string goodId, int qty) => ApplyAsync(s => engine.Buy(s, goodId, qty));
     public Task<ActionResult> SellAsync(string goodId, int qty) => ApplyAsync(s => engine.Sell(s, goodId, qty));
-    public Task<ActionResult> TravelAsync(string cityId) => ApplyAsync(s => engine.Travel(s, cityId));
+    public Task<ActionResult> TravelAsync(string cityId, TravelMethod? method = null) => ApplyAsync(s => engine.Travel(s, cityId, method));
+    public Task<ActionResult> BuyGearAsync(string gearId) => ApplyAsync(s => engine.BuyGear(s, gearId));
+    public Task<ActionResult> UseFirstAidAsync() => ApplyAsync(engine.UseFirstAid);
+    public Task<ActionResult> ShipAsync(string goodId, int qty, string toCityId, string courierId) =>
+        ApplyAsync(s => engine.Ship(s, goodId, qty, toCityId, courierId));
+    public Task<ActionResult> CollectAsync() => ApplyAsync(engine.Collect);
     public Task<ActionResult> WaitAsync() => ApplyAsync(engine.Wait);
     public Task<ActionResult> RepayAsync(long amount) => ApplyAsync(s => engine.RepayDebt(s, amount));
     public Task<ActionResult> EndRunAsync() => ApplyAsync(engine.EndRun);

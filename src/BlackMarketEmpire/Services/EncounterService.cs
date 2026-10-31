@@ -12,20 +12,40 @@ public sealed class EncounterService(IRandomSource random)
     public static long CargoValue(GameState state) =>
         state.Inventory.Sum(kv => kv.Value * state.AverageCost.GetValueOrDefault(kv.Key));
 
-    public static double StopChance(GameState state, GameRules rules)
+    /// <summary>
+    /// Chance of being stopped on arriving in <paramref name="cityId"/> by <paramref name="method"/>,
+    /// given what you're carrying, the heat there and your gear.
+    /// </summary>
+    public static double StopChance(GameState state, GameRules rules, TravelMethod method, string cityId)
     {
         if (state.UnitsHeld == 0) return 0;
         var chance = rules.BaseStopChance
                      + state.UnitsHeld * rules.StopChancePerUnit
-                     + CargoValue(state) / 10_000.0 * rules.StopChancePer10k;
+                     + CargoValue(state) / 10_000.0 * rules.StopChancePer10k
+                     + state.HeatIn(cityId) / 100.0 * rules.StopChanceAtMaxHeat;
+        chance *= TravelService.StopFactor(method, rules);
+        if (state.Has("lining")) chance *= 0.7;
+        if (state.Has("docs") && TravelService.IsCustoms(method)) chance *= 0.5;
         return Math.Min(chance, rules.MaxStopChance);
     }
 
     public static double RunChance(GameState state, GameRules rules, EncounterKind kind)
     {
         var baseChance = kind == EncounterKind.Police ? rules.PoliceRunChance : rules.CustomsRunChance;
-        return Math.Max(0.1, baseChance - state.UnitsHeld * rules.RunPenaltyPerUnit);
+        if (kind == EncounterKind.Police && state.LastTravelMethod == TravelMethod.Car) baseChance += rules.CarRunBonus;
+        if (state.Has("shoes")) baseChance += 0.1;
+        return Math.Clamp(baseChance - state.UnitsHeld * rules.RunPenaltyPerUnit, 0.1, 0.95);
     }
+
+    public static double StingChance(GameState state, GameRules rules) =>
+        rules.StingChance * (state.Has("burners") ? 0.3 : 1.0);
+
+    /// <summary>Applies body armour to raw damage.</summary>
+    public static int Hurt(GameState state, int rawDamage) =>
+        state.Has("armour") ? (int)Math.Round(rawDamage * 0.6) : rawDamage;
+
+    public static void AddHeat(GameState state, string cityId, int amount) =>
+        state.Heat[cityId] = Math.Clamp(state.HeatIn(cityId) + amount, 0, 100);
 
     public static double BribeChance(GameRules rules, EncounterKind kind) =>
         kind == EncounterKind.Police ? rules.PoliceBribeChance : rules.CustomsBribeChance;
@@ -34,15 +54,19 @@ public sealed class EncounterService(IRandomSource random)
         kind == EncounterKind.Police ? rules.PoliceFightChance : rules.CustomsFightChance;
 
     /// <summary>Called on arrival in a city. Returns true if you've been stopped.</summary>
-    public bool MaybeStopOnArrival(GameState state, GameRules rules, int tripDays)
+    public bool MaybeStopOnArrival(GameState state, GameRules rules, TravelMethod method)
     {
-        if (random.NextDouble() >= StopChance(state, rules)) return false;
+        if (random.NextDouble() >= StopChance(state, rules, method, state.CityId)) return false;
 
         var city = GameCatalog.City(state.CityId).Name;
-        var kind = tripDays >= rules.CustomsTripDays ? EncounterKind.Customs : EncounterKind.Police;
-        var intro = kind == EncounterKind.Customs
-            ? $"Customs officers at {city} airport pull you aside and want to search your suitcase."
-            : $"Two police officers stop you outside {city} station. \"Mind if we look in the bag?\"";
+        var kind = TravelService.IsCustoms(method) ? EncounterKind.Customs : EncounterKind.Police;
+        var intro = method switch
+        {
+            TravelMethod.Flight => $"Customs officers at {city} airport pull you aside and want to search your suitcase.",
+            TravelMethod.Boat => $"Port customs in {city} board the boat with sniffer dogs. They head straight for your cabin.",
+            TravelMethod.Car => $"Police roadblock on the way into {city}. \"Pop the boot, please.\"",
+            _ => $"Two police officers stop you outside {city} station. \"Mind if we look in the bag?\"",
+        };
         Start(state, rules, kind, intro);
         return true;
     }
@@ -50,7 +74,7 @@ public sealed class EncounterService(IRandomSource random)
     /// <summary>Called after a big buy or sell. Returns true if the deal was a sting.</summary>
     public bool MaybeSting(GameState state, GameRules rules, long dealValue)
     {
-        if (dealValue < rules.BigDealValue || random.NextDouble() >= rules.StingChance) return false;
+        if (dealValue < rules.BigDealValue || random.NextDouble() >= StingChance(state, rules)) return false;
 
         Start(state, rules, EncounterKind.Undercover,
             "As the deal closes, your contact flashes a badge. It was a sting — undercover police!");
@@ -81,6 +105,7 @@ public sealed class EncounterService(IRandomSource random)
             BribeCost = (long)Math.Ceiling(bribe / 50.0) * 50,
         };
         state.Stats.Stops++;
+        AddHeat(state, state.CityId, rules.HeatOnStop);
     }
 
     private EncounterOutcome Run(GameState state, GameRules rules, Encounter enc)
@@ -88,10 +113,11 @@ public sealed class EncounterService(IRandomSource random)
         if (random.NextDouble() < RunChance(state, rules, enc.Kind))
         {
             state.Stats.Escapes++;
-            return new("You bolt through the crowd and lose them. You got away!", 0, Ended: true, JailDays: 0);
+            AddHeat(state, state.CityId, rules.HeatOnEscape);
+            return new("You bolt and lose them. You got away! The police here will remember you.", 0, Ended: true, JailDays: 0);
         }
 
-        var damage = random.Next(10, 26);
+        var damage = Hurt(state, random.Next(10, 26));
         return new($"They chase you down. You're hit and take {damage} damage — they're still on you!", damage, Ended: false, JailDays: 0);
     }
 
@@ -111,12 +137,13 @@ public sealed class EncounterService(IRandomSource random)
     {
         if (random.NextDouble() < FightChance(rules, enc.Kind))
         {
-            var hurt = random.Next(10, 26);
+            var hurt = Hurt(state, random.Next(10, 26));
             state.Stats.Escapes++;
+            AddHeat(state, state.CityId, rules.HeatOnEscape);
             return new($"You fight your way out, taking {hurt} damage. You got away — this time.", hurt, Ended: true, JailDays: 0);
         }
 
-        var damage = random.Next(30, 61);
+        var damage = Hurt(state, random.Next(30, 61));
         return Arrest(state, rules, enc, $"You lose the fight badly and take {damage} damage.") with { Damage = damage };
     }
 
@@ -136,10 +163,15 @@ public sealed class EncounterService(IRandomSource random)
         state.Stats.GoodsSeized += seizedUnits;
         state.Stats.GoodsSeizedValue += seizedValue;
         state.Stats.FinesPaid += fine;
+        AddHeat(state, state.CityId, rules.HeatOnArrest);
+
+        var lostGear = GameCatalog.Gear.Where(g => g.SeizedOnArrest && state.Has(g.Id)).ToList();
+        foreach (var g in lostGear) state.Gear.Remove(g.Id);
+        var gearText = lostGear.Count > 0 ? $" They also take your {string.Join(" and ", lostGear.Select(g => g.Name.ToLowerInvariant()))}." : "";
 
         var seized = seizedUnits > 0 ? $"They seize {seizedUnits} items worth {Money.Format(seizedValue)}" : "They find nothing to seize";
         var fined = fine > 0 ? $", fine you {Money.Format(fine)}" : "";
-        return new($"{lead} Arrested! {seized}{fined} and lock you up for {jail} day{(jail == 1 ? "" : "s")}.",
+        return new($"{lead} Arrested! {seized}{fined} and lock you up for {jail} day{(jail == 1 ? "" : "s")}.{gearText}",
             0, Ended: true, JailDays: jail);
     }
 }
