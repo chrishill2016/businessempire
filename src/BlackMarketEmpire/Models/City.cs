@@ -9,7 +9,10 @@ public sealed record City(
     string Name,
     string Country,
     IReadOnlyDictionary<string, double> PriceBias,
-    DangerLevel Danger = DangerLevel.Medium)
+    DangerLevel Danger = DangerLevel.Medium,
+    string Region = "Europe",
+    double Latitude = 0,
+    double Longitude = 0)
 {
     /// <summary>How much more (or less) likely police are to stop you here.</summary>
     public double PoliceFactor => Danger switch

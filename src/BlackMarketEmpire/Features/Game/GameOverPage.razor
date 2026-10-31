@@ -42,7 +42,7 @@
         <div class="eyebrow mt-6 mb-2">High scores</div>
         @if (_scores is not null)
         {
-            <HighScoreTable Scores="_scores" Highlight="_state.RunId" />
+            <HighScoreTable Scores="_scores" Highlight="_state.RunId" PageSize="10" />
         }
     }
 </div>

@@ -2,14 +2,14 @@
 
 A mobile-first trading game you can install on your phone, and it works offline. You're a smuggler with **30 days** to turn a small stake and a loan shark's debt into the biggest fortune you can. Buy cheap in one city, carry it to another, and sell high.
 
-When the 30 days are up, your score is **cash plus savings, minus everything you owe**. Your top 10 scores are kept on your device.
+When the 30 days are up, your score is **cash plus savings, minus everything you owe**. Your top 100 scores, with the dates of each run, are kept on your device.
 
 > It's a game. In real life, smuggling ends in prison or worse.
 
 **Play:** https://chrishill2016.github.io/businessempire/ (on your phone, use *Add to Home Screen* / *Install app*)
 
 ## How it plays
-- 6 cities (London, Amsterdam, Marseille, Istanbul, Dubai, Hong Kong) and 8 black-market goods.
+- 14 cities across Europe, the Middle East & Africa, Asia-Pacific and the Americas, and 14 black-market goods. Some goods are bulky, and some only trade in certain cities.
 - Prices change every day, and each city is cheaper or dearer for certain goods.
 - Travel by **train, car, plane or boat**. Each has its own fare, journey time and police risk, and airports are the strictest. Your £5,000 debt grows 5% every day until you pay it back.
 - Your suitcase holds 100 items. Anything still unsold when the run ends is worthless.

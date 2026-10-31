@@ -54,4 +54,6 @@ public sealed class RunStats
     public long Borrowed { get; set; }
     public int EnforcerVisits { get; set; }
     public int StashRaids { get; set; }
+    /// <summary>Biggest profit from a single sale.</summary>
+    public long BestTrade { get; set; }
 }

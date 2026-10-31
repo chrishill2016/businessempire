@@ -51,6 +51,8 @@ public sealed class Stash
     public Dictionary<string, long> AverageCost { get; set; } = [];
 
     public int Units => Goods.Values.Sum();
+
+    public int SpaceUsed => Services.GameCatalog.SpaceFor(Goods);
 }
 
 public enum DangerLevel { Low, Medium, High }

@@ -17,7 +17,8 @@ public sealed class MarketService(IRandomSource random)
             .Where(e => e.CityId == cityId && e.IsActiveOn(day))
             .ToDictionary(e => e.GoodId, e => e.Multiplier);
 
-        foreach (var good in GameCatalog.Goods)
+        var traded = GameCatalog.Goods.Where(g => g.TradedIn(cityId)).ToList();
+        foreach (var good in traded)
         {
             var available = random.NextDouble() < rules.AvailabilityChance;
             if (shocks.TryGetValue(good.Id, out var multiplier))
@@ -33,7 +34,7 @@ public sealed class MarketService(IRandomSource random)
         // Always have at least one thing on sale so a day is never a dead end.
         if (market.Count == 0)
         {
-            var good = GameCatalog.Goods[random.Next(0, GameCatalog.Goods.Count)];
+            var good = traded[random.Next(0, traded.Count)];
             market[good.Id] = PriceFor(good, city);
         }
 

@@ -7,7 +7,15 @@
             Fares are paid up front. Flights are fast but airport customs are the strictest. Boats are slow but quiet.
             @if (State.UnitsHeld == 0) { <b> You're carrying nothing, so nobody will stop you.</b> }
         </div>
-        @foreach (var city in GameCatalog.Cities.Where(c => c.Id != State.CityId))
+        @foreach (var region in GameCatalog.Regions)
+        {
+            var cities = GameCatalog.Cities
+                .Where(c => c.Region == region && c.Id != State.CityId)
+                .OrderBy(c => GameCatalog.DaysBetween(State.CityId, c.Id))
+                .ToList();
+            if (cities.Count == 0) continue;
+            <div class="eyebrow mt-4 travel-region">@region</div>
+        @foreach (var city in cities)
         {
             var options = Engine.TravelOptions(State, city.Id);
             var intel = State.News.Where(n => n.CityId == city.Id && n.Status == NewsStatus.Rumour).ToList();
@@ -45,6 +53,7 @@
                     }
                 </div>
             </div>
+        }
         }
     </DialogContent>
     <DialogActions>

@@ -125,7 +125,7 @@ html, body {
 .mud-appbar { border-bottom: 1px solid var(--bme-line); }
 .mud-dialog { background: var(--bme-panel) !important; border: 1px solid var(--bme-line-strong); }
 .mud-simple-table table thead th { font-family: var(--bme-body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--bme-muted); font-size: 0.75rem; }
-.score-me td { background: rgba(57, 255, 136, 0.12); }
+
 
 /* Keep toasts above the footer bar */
 .mud-snackbar-location-bottom-center {
@@ -259,3 +259,10 @@ html, body {
 .danger-high { color: var(--bme-magenta); }
 .danger-medium { color: #FACC15; }
 .danger-low { color: var(--bme-acid); }
+.size-badge { color: var(--bme-muted); }
+
+/* High scores */
+.score-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid var(--bme-line); }
+.score-row:last-child { border-bottom: none; }
+.score-rank { font-family: var(--bme-display); font-weight: 800; color: var(--bme-muted); min-width: 2rem; padding-top: 2px; }
+.score-row.score-me { background: rgba(57, 255, 136, 0.08); }

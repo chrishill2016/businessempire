@@ -58,6 +58,7 @@ public class GameSessionTests
         Assert.Equal(-2_500, scores[0].Score);
         Assert.Equal(EndReason.Retired, scores[0].Reason);
         Assert.Equal(session.State!.StartedUtc, scores[0].StartedUtc);
+        Assert.Equal(1, scores[0].DaysPlayed);
     }
 
     [Fact]

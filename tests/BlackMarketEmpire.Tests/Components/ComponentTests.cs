@@ -120,10 +120,47 @@ public class ComponentTests : BunitContext
 
         var cut = Render<HighScoreTable>(p => p.Add(c => c.Scores, scores));
 
-        var rows = cut.FindAll("tbody tr");
+        var rows = cut.FindAll(".score-row");
         Assert.Equal(2, rows.Count);
         Assert.Contains("£50,000", rows[0].TextContent);
         Assert.Contains("Dubai", rows[0].TextContent);
+        Assert.Contains("-£1,000", rows[1].TextContent);
+    }
+
+    [Fact]
+    public void HighScoreTable_pages_and_highlights_the_latest_run()
+    {
+        var now = DateTime.UtcNow;
+        var scores = Enumerable.Range(0, 25)
+            .Select(i => new HighScore(Guid.NewGuid(), 100_000 - i * 1_000, now.AddMinutes(-i), "London", EndReason.Finished, now.AddMinutes(-i - 30), 30, 500))
+            .ToList();
+        var latest = scores[0].RunId;
+
+        var cut = Render<HighScoreTable>(p => p.Add(c => c.Scores, scores));
+
+        Assert.Equal(20, cut.FindAll(".score-row").Count);
+        Assert.Contains("LATEST", cut.Find(".score-me").TextContent);
+        Assert.Contains("best trade £500", cut.Find(".score-me").TextContent);
+        cut.FindAll("button").Single(b => b.TextContent.Contains("Show more")).Click();
+        Assert.Equal(25, cut.FindAll(".score-row").Count);
+    }
+
+    [Theory]
+    [InlineData(EndReason.Killed, "KILLED")]
+    [InlineData(EndReason.Retired, "RETIRED")]
+    [InlineData(EndReason.Finished, "FINISHED")]
+    public void HighScoreTable_shows_how_the_run_ended(EndReason reason, string label) =>
+        Assert.Contains(label, HighScoreTable.OutcomeLabel(reason));
+
+    [Fact]
+    public void HighScoreTable_formats_run_dates()
+    {
+        var start = new DateTime(2026, 10, 31, 9, 0, 0, DateTimeKind.Utc);
+        var sameDay = new HighScore(Guid.NewGuid(), 1, start.AddMinutes(45), "London", StartedUtc: start);
+        var noStart = new HighScore(Guid.NewGuid(), 1, start, "London");
+
+        Assert.Contains("–", HighScoreTable.Dates(sameDay));
+        Assert.StartsWith("Ended", HighScoreTable.Dates(noStart));
     }
 }
 

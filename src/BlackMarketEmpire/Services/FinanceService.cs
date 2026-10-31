@@ -175,7 +175,7 @@ public sealed class FinanceService(IRandomSource random)
         var stash = state.StashIn(state.CityId);
         if (stash is null) return ActionResult.Fail("You don't have a stash here.");
         var held = state.Inventory.GetValueOrDefault(goodId);
-        var room = Capacity(rules, stash.Tier) - stash.Units;
+        var room = (Capacity(rules, stash.Tier) - stash.SpaceUsed) / GameCatalog.Good(goodId).Size;
         quantity = Math.Min(quantity, Math.Min(held, room));
         if (quantity <= 0) return ActionResult.Fail(room <= 0 ? "Your stash is full." : "You don't have any of that.");
 
@@ -187,8 +187,9 @@ public sealed class FinanceService(IRandomSource random)
     {
         var stash = state.StashIn(state.CityId);
         if (stash is null) return ActionResult.Fail("You don't have a stash here.");
-        quantity = Math.Min(quantity, Math.Min(stash.Goods.GetValueOrDefault(goodId), state.FreeSpace));
-        if (quantity <= 0) return ActionResult.Fail(state.FreeSpace == 0 ? "Your suitcase is full." : "None of that in the stash.");
+        var room = state.FreeSpace / GameCatalog.Good(goodId).Size;
+        quantity = Math.Min(quantity, Math.Min(stash.Goods.GetValueOrDefault(goodId), room));
+        if (quantity <= 0) return ActionResult.Fail(room == 0 ? "Your suitcase is full." : "None of that in the stash.");
 
         Move(stash.Goods, stash.AverageCost, state.Inventory, state.AverageCost, goodId, quantity);
         return ActionResult.Ok($"Took {quantity} × {GameCatalog.Good(goodId).Name} from the stash.");

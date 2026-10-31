@@ -20,7 +20,7 @@ public sealed class EncounterService(IRandomSource random)
     {
         if (state.UnitsHeld == 0) return 0;
         var chance = rules.BaseStopChance
-                     + state.UnitsHeld * rules.StopChancePerUnit
+                     + state.SpaceUsed * rules.StopChancePerUnit
                      + CargoValue(state) / 10_000.0 * rules.StopChancePer10k
                      + state.HeatIn(cityId) / 100.0 * rules.StopChanceAtMaxHeat;
         chance *= TravelService.StopFactor(method, rules);
@@ -35,7 +35,7 @@ public sealed class EncounterService(IRandomSource random)
         var baseChance = kind == EncounterKind.Police ? rules.PoliceRunChance : rules.CustomsRunChance;
         if (kind == EncounterKind.Police && state.LastTravelMethod == TravelMethod.Car) baseChance += rules.CarRunBonus;
         if (state.Has("shoes")) baseChance += 0.1;
-        return Math.Clamp(baseChance - state.UnitsHeld * rules.RunPenaltyPerUnit, 0.1, 0.95);
+        return Math.Clamp(baseChance - state.SpaceUsed * rules.RunPenaltyPerUnit, 0.1, 0.95);
     }
 
     public static double StingChance(GameState state, GameRules rules) =>

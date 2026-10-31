@@ -55,7 +55,7 @@ public class LenderOfferTests
         var offer = FinanceService.Offer(In("dubai"), Rules, Eddie);
 
         Assert.False(offer.CanBorrow);
-        Assert.Contains("London and Istanbul", offer.Refusal);
+        Assert.Contains("London, Istanbul and Naples", offer.Refusal);
     }
 
     [Fact]
