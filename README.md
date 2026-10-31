@@ -8,11 +8,12 @@ When the 30 days are up, your score is **cash minus debt**. Your top 10 scores a
 
 **Play:** https://chrishill2016.github.io/businessempire/ (on your phone, use *Add to Home Screen* / *Install app*)
 
-## How it plays (Phase 1)
+## How it plays
 - 6 cities (London, Amsterdam, Marseille, Istanbul, Dubai, Hong Kong) and 8 black-market goods.
 - Prices change every day, and each city is cheaper or dearer for certain goods.
 - Travelling takes 1–3 days. Your £5,000 debt grows 5% every day until you pay it back.
 - Your suitcase holds 100 items. Anything still unsold when the run ends is worthless.
+- **Market events:** the intel feed reports price spikes and crashes in other cities. They only last a few days, and about a quarter of the rumours are false. You only find out by going there.
 - Your run saves after every move, so you can close the app and carry on later.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log.
@@ -27,7 +28,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for upcoming phases and the feature log
 ```
 src/BlackMarketEmpire/
   Features/        Home, Game (market, travel, dialogs, game over), Scores
-  Services/        GameEngine (rules), MarketService (prices), GameSession, HighScoreService, IndexedDbStore
+  Services/        GameEngine (rules), MarketService (prices), EventService (events & rumours), GameSession, HighScoreService, IndexedDbStore
   Models/          GameState, Good, City, GameRules, HighScore
   wwwroot/         index.html, service worker, manifest, icons, js interop
 tests/BlackMarketEmpire.Tests/

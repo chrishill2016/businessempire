@@ -8,10 +8,17 @@
         var onSale = State.Market.TryGetValue(good.Id, out var price);
         var held = State.Inventory.GetValueOrDefault(good.Id);
         var avg = State.AverageCost.GetValueOrDefault(good.Id);
+        var shock = EventService.ActiveEvent(State, State.CityId, good.Id);
         <div class="market-row d-flex align-center gap-2 px-3 py-2" data-good="@good.Id">
             <div class="good-icon">@good.Icon</div>
             <div class="flex-grow-1" style="min-width:0">
-                <div style="font-weight:600;line-height:1.2">@good.Name</div>
+                <div style="font-weight:600;line-height:1.2">
+                    @good.Name
+                    @if (shock is not null)
+                    {
+                        <span class="event-badge @(shock.Kind == MarketEventKind.Spike ? "spike" : "crash")">@NewsFeed.KindLabel(shock.Kind)</span>
+                    }
+                </div>
                 @if (onSale)
                 {
                     <div class="money" style="font-size:1.05rem;color:var(--bme-text)">@Money.Format(price)</div>

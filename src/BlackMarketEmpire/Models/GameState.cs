@@ -24,6 +24,12 @@ public sealed class GameState
     /// <summary>Today's prices in the current city. Goods missing from the map aren't on sale today.</summary>
     public Dictionary<string, int> Market { get; set; } = [];
 
+    /// <summary>Real price shocks currently (or recently) affecting markets.</summary>
+    public List<MarketEvent> Events { get; set; } = [];
+
+    /// <summary>Intel feed, newest first. Includes false rumours.</summary>
+    public List<NewsItem> News { get; set; } = [];
+
     /// <summary>Most recent messages first.</summary>
     public List<string> Log { get; set; } = [];
 

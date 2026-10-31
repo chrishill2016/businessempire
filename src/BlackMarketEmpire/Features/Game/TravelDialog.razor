@@ -3,17 +3,29 @@
         <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Zones" Size="22" /><span class="display">WHERE TO?</span></div>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="Typo.caption">Your debt grows 5% for every day you spend travelling.</MudText>
+        <MudText Typo="Typo.caption">Your debt grows 5% for every day you spend travelling. Price shocks only last a few days, so long trips might arrive too late.</MudText>
         <MudList T="string" Class="mt-2">
             @foreach (var city in GameCatalog.Cities.Where(c => c.Id != CurrentCityId))
             {
                 var days = GameCatalog.DaysBetween(CurrentCityId, city.Id);
                 var tooFar = days > DaysLeft;
+                var intel = News.Where(n => n.CityId == city.Id && n.Status == NewsStatus.Rumour).ToList();
                 <MudListItem T="string" Disabled="tooFar" OnClick="@(() => Dialog.Close(DialogResult.Ok(city.Id)))">
                     <div class="d-flex justify-space-between">
                         <span><b>@city.Name</b> <span class="muted">@city.Country</span></span>
                         <span>@days day@(days == 1 ? "" : "s")@(tooFar ? " · too far" : "")</span>
                     </div>
+                    @if (intel.Count > 0)
+                    {
+                        <div class="city-intel" data-intel="@city.Id">
+                            @foreach (var n in intel)
+                            {
+                                <span class="@(n.Kind == MarketEventKind.Spike ? "spike" : "crash")">
+                                    @(n.Kind == MarketEventKind.Spike ? "▲" : "▼") @GameCatalog.Good(n.GoodId).Name <span class="muted">(rumour, day @n.Day)</span>
+                                </span>
+                            }
+                        </div>
+                    }
                 </MudListItem>
             }
         </MudList>
@@ -27,4 +39,5 @@
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Parameter] public string CurrentCityId { get; set; } = "";
     [Parameter] public int DaysLeft { get; set; }
+    [Parameter] public IReadOnlyList<NewsItem> News { get; set; } = [];
 }

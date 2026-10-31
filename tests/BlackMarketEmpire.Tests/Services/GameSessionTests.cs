@@ -38,6 +38,8 @@ public class GameSessionTests
         Assert.Equal(first.State.RunId, second.State!.RunId);
         Assert.Equal(2, second.State.Day);
         Assert.Equal(3, second.State.Inventory["cigs"]);
+        Assert.Equal(first.State.News.Select(n => n.Headline), second.State.News.Select(n => n.Headline));
+        Assert.Equal(first.State.Events, second.State.Events);
     }
 
     [Fact]
