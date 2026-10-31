@@ -53,10 +53,24 @@ Each phase ships as its own pull request into `main`.
   - Contacts/informants who warn about crackdowns
 - [ ] **Heat / wanted level** per city — rises with big trades and encounters, cools over time
 
+### Gear shop
+Spend cash on gear that sticks with you for the rest of the run. Each item is a trade-off between spending now and earning or surviving later.
+- [ ] **Capacity:** bigger holdall (+50), wheeled case (+100), hire van (+250; road travel only)
+- [ ] **Avoiding police:**
+  - Hidden-lining suitcase: lowers the chance you're stopped
+  - Fake documents: big bonus against customs/airport checks
+  - Police scanner app: warns you about a crackdown before you travel
+  - Burner phones: harder to trace, lowers sting chance on big deals
+- [ ] **Escaping:** running shoes (better run odds), a fast car (much better run odds on road trips)
+- [ ] **Survival:** body armour (cuts damage taken), first-aid kit (heal once when hurt)
+- [ ] **Bribing:** a "friend in the force" contact who makes bribes cheaper and more likely to work in one city
+- [ ] Gear can be **lost**: seized on arrest, or stolen in a mugging, so it's a risk, not a guaranteed upgrade
+- [ ] Some gear is only sold in certain cities, and prices vary like goods
+
 ## Phase 5 — Economy depth
 - [ ] Bank (safe deposit) and loan shark with interest
 - [ ] Stash houses in cities (store goods; can be raided)
-- [ ] Capacity upgrades (bigger bag, van, warehouse)
+- [ ] Warehouse / storage space (see the Phase 4 gear shop for carried-capacity upgrades)
 - [ ] City risk profiles (some cities lucrative but dangerous)
 
 ## Phase 6 — Bigger world & score history
