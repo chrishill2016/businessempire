@@ -1,0 +1,71 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject AppStatusService Status
+@inject ISnackbar Snackbar
+
+<MudThemeProvider Theme="AppTheme.Theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall" CloseButton="true" />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense="true">
+        <MudLink Href="" Underline="Underline.None" Color="Color.Primary" Typo="Typo.h6">
+            💼 Black Market Empire
+        </MudLink>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Inherit" Href="scores" aria-label="High scores" />
+    </MudAppBar>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+<AppFooter />
+
+@code {
+    private bool _wasOffline;
+
+    protected override void OnInitialized()
+    {
+        Status.Changed += OnStatusChanged;
+        Status.UpdateReady += OnUpdateReady;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Status.StartAsync();
+        }
+    }
+
+    private void OnStatusChanged()
+    {
+        if (!Status.IsOnline)
+        {
+            _wasOffline = true;
+        }
+        else if (_wasOffline)
+        {
+            _wasOffline = false;
+            Snackbar.Add("Back online.", Severity.Info);
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnUpdateReady() => InvokeAsync(() =>
+        Snackbar.Add("New version available", Severity.Info, options =>
+        {
+            options.RequireInteraction = true;
+            options.Action = "Refresh";
+            options.ActionColor = Color.Primary;
+            options.OnClick = _ => Status.ApplyUpdateAsync().AsTask();
+        }));
+
+    public void Dispose()
+    {
+        Status.Changed -= OnStatusChanged;
+        Status.UpdateReady -= OnUpdateReady;
+    }
+}

@@ -1,0 +1,29 @@
+@if (Scores.Count == 0)
+{
+    <MudText Color="Color.Default" Class="score-empty">No scores yet. Finish a run to get on the board.</MudText>
+}
+else
+{
+    <MudSimpleTable Dense="true" Hover="false" Striped="true">
+        <thead>
+            <tr><th>#</th><th>Score</th><th>Ended in</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Scores.Count; i++)
+            {
+                var s = Scores[i];
+                <tr class="@(s.RunId == Highlight ? "mud-theme-primary" : null)">
+                    <td>@(i + 1)</td>
+                    <td class="money @(s.Score < 0 ? "negative" : null)">@Money.Format(s.Score)</td>
+                    <td>@s.FinalCity</td>
+                    <td>@s.AchievedUtc.ToLocalTime().ToString("d MMM yy")</td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<HighScore> Scores { get; set; } = [];
+    [Parameter] public Guid? Highlight { get; set; }
+}

@@ -1,0 +1,22 @@
+@implements IDisposable
+@inject AppStatusService Status
+
+<footer class="app-footer">
+    <span>v@(AppInfo.Version)</span>
+    @if (Status.IsOnline)
+    {
+        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text" Icon="@Icons.Material.Filled.Wifi">Online</MudChip>
+    }
+    else
+    {
+        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text" Icon="@Icons.Material.Filled.WifiOff">Offline · game still works</MudChip>
+    }
+</footer>
+
+@code {
+    protected override void OnInitialized() => Status.Changed += OnChanged;
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Status.Changed -= OnChanged;
+}

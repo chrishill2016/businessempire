@@ -1,0 +1,154 @@
+@page "/play"
+@inject GameSession Session
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Day @(Session.State?.Day) · Black Market Empire</PageTitle>
+
+<div class="page">
+    @if (Session.State is { } state)
+    {
+        var lastDay = state.Day >= Session.Engine.Rules.TotalDays;
+        <StatusPanel State="state" TotalDays="Session.Engine.Rules.TotalDays" />
+
+        @if (lastDay)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
+                Last day! Sell everything and pay your debt — unsold goods are worthless when the run ends.
+            </MudAlert>
+        }
+
+        <div class="mt-3">
+            <MarketList State="state" Disabled="_busy" OnTrade="OpenTrade" />
+        </div>
+
+        <MudStack Row="true" Spacing="2" Class="mt-3" Wrap="Wrap.Wrap">
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Flight"
+                       Disabled="@(_busy || lastDay)" OnClick="OpenTravel" Class="flex-grow-1">Travel</MudButton>
+            <MudButton Variant="Variant.Outlined" StartIcon="@(lastDay ? Icons.Material.Filled.Flag : Icons.Material.Filled.Bedtime)"
+                       Disabled="_busy" OnClick="WaitOrEnd" Class="flex-grow-1">@(lastDay ? "End run" : "Wait a day")</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Payments"
+                       Disabled="@(_busy || state.Debt == 0 || state.Cash == 0)" OnClick="OpenRepay" Class="flex-grow-1">Repay debt</MudButton>
+        </MudStack>
+
+        <MudPaper Class="pa-3 mt-3" Elevation="0" Outlined="true">
+            <MudText Typo="Typo.subtitle2" Class="mb-1">Recent</MudText>
+            @foreach (var line in state.Log.Take(6))
+            {
+                <MudText Typo="Typo.caption" Class="d-block">@line</MudText>
+            }
+        </MudPaper>
+
+        @if (!lastDay)
+        {
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Default" Class="mt-2" OnClick="ConfirmEndEarly">
+                Retire early (end run now)
+            </MudButton>
+        }
+    }
+    else if (_loaded)
+    {
+        <MudText>No run in progress.</MudText>
+        <MudButton Href="" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Back to start</MudButton>
+    }
+</div>
+
+@code {
+    private bool _loaded;
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.LoadAsync();
+        _loaded = true;
+        if (Session.State is { IsOver: true })
+        {
+            Nav.NavigateTo("game-over");
+        }
+    }
+
+    private async Task OpenTrade((Good Good, TradeMode Mode) args)
+    {
+        var state = Session.State!;
+        var (good, mode) = args;
+        var max = mode == TradeMode.Buy ? Session.Engine.MaxBuyable(state, good.Id) : Session.Engine.Held(state, good.Id);
+        var parameters = new DialogParameters<TradeDialog>
+        {
+            { d => d.Good, good },
+            { d => d.Mode, mode },
+            { d => d.Price, state.Market[good.Id] },
+            { d => d.Max, max },
+        };
+        var dialog = await Dialogs.ShowAsync<TradeDialog>(null, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: int qty })
+        {
+            await Run(() => mode == TradeMode.Buy ? Session.BuyAsync(good.Id, qty) : Session.SellAsync(good.Id, qty));
+        }
+    }
+
+    private async Task OpenTravel()
+    {
+        var state = Session.State!;
+        var parameters = new DialogParameters<TravelDialog>
+        {
+            { d => d.CurrentCityId, state.CityId },
+            { d => d.DaysLeft, Session.Engine.DaysLeft(state) },
+        };
+        var dialog = await Dialogs.ShowAsync<TravelDialog>(null, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: string cityId })
+        {
+            await Run(() => Session.TravelAsync(cityId));
+        }
+    }
+
+    private async Task OpenRepay()
+    {
+        var state = Session.State!;
+        var parameters = new DialogParameters<RepayDialog>
+        {
+            { d => d.Debt, state.Debt },
+            { d => d.Cash, state.Cash },
+        };
+        var dialog = await Dialogs.ShowAsync<RepayDialog>(null, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: long amount })
+        {
+            await Run(() => Session.RepayAsync(amount));
+        }
+    }
+
+    private Task WaitOrEnd() => Run(Session.WaitAsync);
+
+    private async Task ConfirmEndEarly()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Retire early?",
+            "Your run ends now. Score = cash minus debt; anything you're carrying is worthless.",
+            yesText: "End run", cancelText: "Keep playing");
+        if (confirmed == true)
+        {
+            await Run(Session.EndRunAsync);
+        }
+    }
+
+    private async Task Run(Func<Task<ActionResult>> action)
+    {
+        _busy = true;
+        try
+        {
+            var result = await action();
+            Snackbar.Add(result.Message, result.Success ? Severity.Normal : Severity.Warning);
+            if (Session.State is { IsOver: true })
+            {
+                Nav.NavigateTo("game-over");
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

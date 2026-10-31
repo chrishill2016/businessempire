@@ -2,16 +2,17 @@
 
 Each phase ships as its own pull request into `main`.
 
-## Phase 1 — Core loop
-- [ ] Project scaffold (Blazor WASM PWA, MudBlazor dark theme, CI/CD to GitHub Pages)
-- [ ] 6 cities, ~8 contraband goods, each with a price range
-- [ ] Daily price fluctuation per city
-- [ ] Buy / sell with cash and a carry-capacity limit
-- [ ] Starting debt that must be repaid to count towards score
-- [ ] Travel between cities costs days (1–3 depending on route)
-- [ ] 30-day limit, game-over screen, net-worth score
-- [ ] Local top-10 high scores (IndexedDB)
-- [ ] Version in footer, online/offline indicator, "new version available" prompt
+## Phase 1 — Core loop ✅
+- [x] Project scaffold (Blazor WASM PWA, MudBlazor dark theme, CI/CD to GitHub Pages)
+- [x] 6 cities, 8 black-market goods, each with a price range and per-city price bias
+- [x] Daily price changes per city; not every good is traded every day
+- [x] Buy / sell with cash and a 100-item suitcase limit
+- [x] £5,000 starting debt with 5% daily interest; repay any time
+- [x] Travel between cities costs days (1–3 depending on route)
+- [x] 30-day limit, "wait a day", retire early, game-over screen, score = cash − debt
+- [x] Local top-10 high scores (IndexedDB)
+- [x] Run auto-saves after every action and resumes when you reopen the app
+- [x] Version in footer, online/offline indicator, "new version available" prompt
 
 ## Phase 2 — Market events
 - [ ] Random events that spike or crash a good's price in a city for several days

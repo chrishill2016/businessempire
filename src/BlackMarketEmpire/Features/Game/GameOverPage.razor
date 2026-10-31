@@ -1,0 +1,62 @@
+@page "/game-over"
+@inject GameSession Session
+@inject HighScoreService HighScores
+@inject NavigationManager Nav
+
+<PageTitle>Run over · Black Market Empire</PageTitle>
+
+<div class="page">
+    @if (_state is null)
+    {
+        <MudText>No finished run.</MudText>
+        <MudButton Href="" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Back to start</MudButton>
+    }
+    else
+    {
+        var score = Session.Engine.Score(_state);
+        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mt-4">
+            <MudText Typo="Typo.h5">Run over</MudText>
+            <MudText Typo="Typo.h3" Class="@($"money {(score < 0 ? "negative" : "positive")}")">@Money.Format(score)</MudText>
+            <MudText Typo="Typo.body2">
+                Cash £@_state.Cash.ToString("N0") · Debt £@_state.Debt.ToString("N0") · Day @_state.Day in @GameCatalog.City(_state.CityId).Name
+            </MudText>
+            @if (Session.FinalRank is int rank)
+            {
+                <MudAlert Severity="@(rank == 1 ? Severity.Success : Severity.Info)" Dense="true">
+                    @(rank == 1 ? "New top score!" : $"You placed #{rank} on your high scores.")
+                </MudAlert>
+            }
+            @if (_state.UnitsHeld > 0)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Warning">You finished with @_state.UnitsHeld unsold items — they're worth nothing now.</MudText>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="PlayAgain" Class="mt-2">
+                Play again
+            </MudButton>
+        </MudStack>
+
+        <MudText Typo="Typo.h6" Class="mt-6 mb-2">High scores</MudText>
+        @if (_scores is not null)
+        {
+            <HighScoreTable Scores="_scores" Highlight="_state.RunId" />
+        }
+    }
+</div>
+
+@code {
+    private GameState? _state;
+    private IReadOnlyList<HighScore>? _scores;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.LoadAsync();
+        _state = Session.State is { IsOver: true } s ? s : null;
+        _scores = await HighScores.GetTopAsync();
+    }
+
+    private async Task PlayAgain()
+    {
+        await Session.StartNewAsync();
+        Nav.NavigateTo("play");
+    }
+}
