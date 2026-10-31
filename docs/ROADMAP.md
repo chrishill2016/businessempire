@@ -49,7 +49,19 @@ Each phase ships as its own pull request into `main`.
 - [ ] Capacity upgrades (bigger bag, van, warehouse)
 - [ ] City risk profiles (some cities lucrative but dangerous)
 
-## Phase 6 — Polish
+## Phase 6 — Bigger world & score history
+- [ ] **More cities** — e.g. New York, Miami, Bogotá, Lagos, Bangkok, Sydney, Moscow, Naples
+  - Regions/continents so long-haul trips take longer (and later need flights)
+  - Some cities only reachable by certain travel methods (ties into Phase 4)
+- [ ] **More goods** — e.g. untaxed fuel, pirated games, counterfeit cash, rare wildlife parts (high risk), stolen car parts, fake medicines, cloned bank cards, rare whisky
+  - Goods with different sizes (a painting takes more suitcase space than a phone)
+  - Region-specific goods only sold in certain cities
+- [ ] **Top 100 high scores** kept on the device (currently top 10)
+  - Each entry shows the **run's start and end dates** (start date is already saved with each run)
+  - Extra details per entry: days played, how the run ended (finished / retired early / arrested / killed), best single trade
+  - Scroll/paginate the table, highlight your latest run, option to clear scores
+
+## Phase 7 — Polish
 - [ ] Sound and haptics
 - [ ] Run statistics, achievements
 - [ ] Difficulty modes / seeded "daily challenge"
