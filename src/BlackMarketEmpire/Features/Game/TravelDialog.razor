@@ -1,6 +1,6 @@
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">✈️ Where to?</MudText>
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Zones" Size="22" /><span class="display">WHERE TO?</span></div>
     </TitleContent>
     <DialogContent>
         <MudText Typo="Typo.caption">Your debt grows 5% for every day you spend travelling.</MudText>
@@ -11,7 +11,7 @@
                 var tooFar = days > DaysLeft;
                 <MudListItem T="string" Disabled="tooFar" OnClick="@(() => Dialog.Close(DialogResult.Ok(city.Id)))">
                     <div class="d-flex justify-space-between">
-                        <span><b>@city.Name</b> <span style="opacity:.7">@city.Country</span></span>
+                        <span><b>@city.Name</b> <span class="muted">@city.Country</span></span>
                         <span>@days day@(days == 1 ? "" : "s")@(tooFar ? " · too far" : "")</span>
                     </div>
                 </MudListItem>

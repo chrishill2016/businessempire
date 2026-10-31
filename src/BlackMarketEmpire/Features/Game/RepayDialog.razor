@@ -1,9 +1,9 @@
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">🦈 Pay the loan shark</MudText>
+        <div class="d-flex align-center gap-2"><NeonIcon Kind="NeonIconKind.Heat" Size="22" /><span class="display">PAY THE LOAN SHARK</span></div>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="Typo.body2">You owe £@Debt.ToString("N0"). It grows 5% every day.</MudText>
+        <MudText Typo="Typo.body2">You owe @Money.Format(Debt). It grows 5% every day.</MudText>
         <div class="d-flex align-center gap-2 mt-3">
             <MudNumericField T="long" @bind-Value="_amount" Min="1" Max="Max" Label="Amount (£)" Variant="Variant.Outlined"
                              Immediate="true" Class="flex-grow-1" InputMode="InputMode.numeric" />

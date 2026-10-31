@@ -15,11 +15,14 @@
     {
         var score = Session.Engine.Score(_state);
         <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mt-4">
-            <MudText Typo="Typo.h5">Run over</MudText>
-            <MudText Typo="Typo.h3" Class="@($"money {(score < 0 ? "negative" : "positive")}")">@Money.Format(score)</MudText>
-            <MudText Typo="Typo.body2">
-                Cash £@_state.Cash.ToString("N0") · Debt £@_state.Debt.ToString("N0") · Day @_state.Day in @GameCatalog.City(_state.CityId).Name
-            </MudText>
+            <div class="eyebrow">Run over</div>
+            <div class="panel pa-5" style="width:100%;text-align:center">
+                <div class="eyebrow mb-1">Final net worth</div>
+                <div class="money @(score < 0 ? "negative" : "positive")" style="font-size:2.4rem;text-shadow:0 0 14px currentColor">@Money.Format(score)</div>
+                <div class="muted mt-2">
+                    Cash @Money.Format(_state.Cash) · Debt @Money.Format(_state.Debt) · Day @_state.Day in @GameCatalog.City(_state.CityId).Name
+                </div>
+            </div>
             @if (Session.FinalRank is int rank)
             {
                 <MudAlert Severity="@(rank == 1 ? Severity.Success : Severity.Info)" Dense="true">
@@ -28,14 +31,14 @@
             }
             @if (_state.UnitsHeld > 0)
             {
-                <MudText Typo="Typo.caption" Color="Color.Warning">You finished with @_state.UnitsHeld unsold items — they're worth nothing now.</MudText>
+                <MudText Typo="Typo.caption" Class="negative">You finished with @_state.UnitsHeld unsold items — they're worth nothing now.</MudText>
             }
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="PlayAgain" Class="mt-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="PlayAgain" Class="mt-2" Style="height:56px">
                 Play again
             </MudButton>
         </MudStack>
 
-        <MudText Typo="Typo.h6" Class="mt-6 mb-2">High scores</MudText>
+        <div class="eyebrow mt-6 mb-2">High scores</div>
         @if (_scores is not null)
         {
             <HighScoreTable Scores="_scores" Highlight="_state.RunId" />

@@ -12,9 +12,9 @@ else
             @for (var i = 0; i < Scores.Count; i++)
             {
                 var s = Scores[i];
-                <tr class="@(s.RunId == Highlight ? "mud-theme-primary" : null)">
+                <tr class="@(s.RunId == Highlight ? "score-me" : null)">
                     <td>@(i + 1)</td>
-                    <td class="money @(s.Score < 0 ? "negative" : null)">@Money.Format(s.Score)</td>
+                    <td class="money @(s.Score < 0 ? "negative" : "positive")">@Money.Format(s.Score)</td>
                     <td>@s.FinalCity</td>
                     <td>@s.AchievedUtc.ToLocalTime().ToString("d MMM yy")</td>
                 </tr>

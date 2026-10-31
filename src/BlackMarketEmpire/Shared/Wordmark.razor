@@ -1,0 +1,9 @@
+<div class="wordmark @(Large ? "large" : "small")" style="@(Center ? "text-align:center" : null)" aria-label="Black Market Empire">
+    <div class="wm-top">BLACK<span class="wm-us">_</span>MARKET</div>
+    <div class="wm-bottom">EMPIRE</div>
+</div>
+
+@code {
+    [Parameter] public bool Large { get; set; }
+    [Parameter] public bool Center { get; set; }
+}

@@ -1,36 +1,44 @@
-<MudPaper Class="pa-3" Elevation="2">
-    <div class="d-flex justify-space-between align-center">
+<div class="panel pa-4">
+    <div class="d-flex justify-space-between align-start">
         <div>
-            <MudText Typo="Typo.h6" Class="status-city">📍 @GameCatalog.City(State.CityId).Name</MudText>
-            <MudText Typo="Typo.caption">@GameCatalog.City(State.CityId).Country</MudText>
+            <div class="eyebrow">Current zone</div>
+            <div class="d-flex align-center gap-2 mt-1">
+                <NeonIcon Kind="NeonIconKind.Zones" Size="22" />
+                <span class="display status-city" style="font-size:1.25rem">@City.Name.ToUpperInvariant()</span>
+            </div>
+            <div class="muted" style="font-size:.9rem">@City.Country</div>
         </div>
         <div style="text-align:right">
-            <MudText Typo="Typo.h6" Class="status-day">Day @State.Day / @TotalDays</MudText>
-            <MudText Typo="Typo.caption" Color="@(DaysLeft <= 3 ? Color.Warning : Color.Default)">
+            <div class="eyebrow">Day</div>
+            <div class="display status-day mt-1" style="font-size:1.25rem">Day @State.Day / @TotalDays</div>
+            <div class="@(DaysLeft <= 3 ? "negative" : "muted")" style="font-size:.9rem">
                 @(DaysLeft == 0 ? "Last day!" : $"{DaysLeft} day{(DaysLeft == 1 ? "" : "s")} left")
-            </MudText>
+            </div>
         </div>
     </div>
-    <MudProgressLinear Value="@(State.Day * 100.0 / TotalDays)" Color="@(DaysLeft <= 3 ? Color.Warning : Color.Primary)" Class="my-2" Rounded="true" />
-    <MudGrid Spacing="1">
-        <MudItem xs="4">
-            <MudText Typo="Typo.caption">Cash</MudText>
-            <MudText Typo="Typo.subtitle1" Class="money status-cash">£@State.Cash.ToString("N0")</MudText>
-        </MudItem>
-        <MudItem xs="4">
-            <MudText Typo="Typo.caption">Debt</MudText>
-            <MudText Typo="Typo.subtitle1" Class="@($"money status-debt {(State.Debt > 0 ? "negative" : "positive")}")">£@State.Debt.ToString("N0")</MudText>
-        </MudItem>
-        <MudItem xs="4">
-            <MudText Typo="Typo.caption">Suitcase</MudText>
-            <MudText Typo="Typo.subtitle1" Class="status-space">@State.UnitsHeld / @State.Capacity</MudText>
-        </MudItem>
-    </MudGrid>
-</MudPaper>
+
+    <div class="meter my-3 @(DaysLeft <= 3 ? "warn" : null)"><div style="width:@(State.Day * 100 / TotalDays)%"></div></div>
+
+    <div class="d-flex justify-space-between gap-2">
+        <div class="stat">
+            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Credits" Size="14" /> Cash</div>
+            <div class="money status-cash" style="font-size:1.1rem">@Money.Format(State.Cash)</div>
+        </div>
+        <div class="stat">
+            <div class="eyebrow d-flex align-center gap-1"><NeonIcon Kind="NeonIconKind.Heat" Size="14" /> Debt</div>
+            <div class="money status-debt @(State.Debt > 0 ? "negative" : "positive")" style="font-size:1.1rem">@Money.Format(State.Debt)</div>
+        </div>
+        <div class="stat" style="text-align:right">
+            <div class="eyebrow d-flex align-center gap-1 justify-end"><NeonIcon Kind="NeonIconKind.Deals" Size="14" /> Case</div>
+            <div class="money status-space" style="font-size:1.1rem">@State.UnitsHeld / @State.Capacity</div>
+        </div>
+    </div>
+</div>
 
 @code {
     [Parameter, EditorRequired] public GameState State { get; set; } = default!;
     [Parameter, EditorRequired] public int TotalDays { get; set; }
 
+    private City City => GameCatalog.City(State.CityId);
     private int DaysLeft => TotalDays - State.Day;
 }

@@ -1,9 +1,9 @@
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">@(Mode == TradeMode.Buy ? "Buy" : "Sell") @Good.Icon @Good.Name</MudText>
+        <span class="display">@(Mode == TradeMode.Buy ? "BUY" : "SELL")</span> <span style="font-weight:600">@Good.Icon @Good.Name</span>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="Typo.body2">£@Price.ToString("N0") each · @(Mode == TradeMode.Buy ? $"you can buy up to {Max}" : $"you have {Max}")</MudText>
+        <MudText Typo="Typo.body2">@Money.Format(Price) each · @(Mode == TradeMode.Buy ? $"you can buy up to {Max}" : $"you have {Max}")</MudText>
         @if (Max == 0)
         {
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
@@ -18,7 +18,7 @@
                                  Immediate="true" Class="flex-grow-1" InputMode="InputMode.numeric" />
                 <MudButton Variant="Variant.Outlined" OnClick="@(() => _quantity = Max)">Max</MudButton>
             </div>
-            <MudText Typo="Typo.h6" Class="mt-3 money">Total: £@(((long)_quantity * Price).ToString("N0"))</MudText>
+            <MudText Typo="Typo.h6" Class="mt-3 money">Total: @Money.Format((long)_quantity * Price)</MudText>
         }
     </DialogContent>
     <DialogActions>
